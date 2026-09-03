@@ -6,7 +6,7 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 
 ## Play now
 
-**[Enter the arena on GitHub Pages →](https://thekhaggard.github.io/mk2-arcade-player/)**
+**[Enter the arena on GitHub Pages →](https://thekhaggard.github.io/bo2-arcade-player/)**
 
 ## Features
 

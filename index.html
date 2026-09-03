@@ -1,18 +1,16 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Blood Oath II — tek veya iki oyunculu, tarayıcıda anında oynanan özgün karanlık fantezi arcade dövüş oyunu."
+      content="Blood Oath II — an original dark-fantasy arcade fighting game for one or two local players. Play instantly in your browser."
     />
     <meta name="theme-color" content="#160605" />
     <title>Blood Oath II — Arcade Fighting Game</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="assets/arena-moon-temple.png" as="image" />
-    <link rel="preload" href="assets/riven-sprites.png" as="image" />
-    <link rel="preload" href="assets/veyra-sprites.png" as="image" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -26,10 +24,10 @@
         <p class="marquee-subtitle">WARRIORS OF THE SHATTERED MOON</p>
       </header>
 
-      <section class="bezel" aria-label="Blood Oath II oyun ekranı">
+      <section class="bezel" aria-label="Blood Oath II game screen">
         <div class="screen" id="screen">
           <canvas id="gameCanvas" width="960" height="540">
-            Tarayıcınız canvas özelliğini desteklemiyor.
+            Your browser does not support the canvas element.
           </canvas>
           <div class="screen-shade" aria-hidden="true"></div>
           <div class="scanlines" aria-hidden="true"></div>
@@ -37,7 +35,7 @@
 
           <section class="game-overlay loading-overlay" id="loadingOverlay" aria-live="polite">
             <div class="loading-seal" aria-hidden="true"><span>II</span></div>
-            <p>ARENA UYANDIRILIYOR</p>
+            <p>AWAKENING THE ARENA</p>
             <div class="loading-bar"><i id="loadingProgress"></i></div>
           </section>
 
@@ -53,38 +51,59 @@
             <div class="arcade-menu">
               <button class="arcade-button primary" type="button" data-mode="solo">
                 <span class="button-number">1</span>
-                <span><b>TEK OYUNCU</b><small>Bilgisayara karşı</small></span>
+                <span><b>SINGLE PLAYER</b><small>Face an adaptive CPU rival</small></span>
               </button>
               <button class="arcade-button" type="button" data-mode="versus">
                 <span class="button-number">2</span>
-                <span><b>İKİ OYUNCU</b><small>Aynı klavye veya iki kol</small></span>
+                <span><b>LOCAL VERSUS</b><small>One keyboard or two gamepads</small></span>
               </button>
             </div>
-            <p class="insert-coin">SEÇİM YAP · DÖVÜŞ BAŞLASIN</p>
+            <p class="insert-coin">CHOOSE YOUR FATE · ENTER THE ARENA</p>
           </section>
 
           <section class="game-overlay select-overlay" id="selectOverlay" hidden>
             <header class="select-heading">
-              <p id="selectionEyebrow">OYUNCU 1</p>
-              <h2>DÖVÜŞÇÜNÜ SEÇ</h2>
-              <span id="selectionStatus">Bir savaşçı seç</span>
+              <p id="selectionEyebrow">PLAYER ONE</p>
+              <h2>CHOOSE YOUR FIGHTER</h2>
+              <span id="selectionStatus">Select a warrior</span>
             </header>
 
             <div class="fighter-roster" id="fighterRoster">
-              <button class="fighter-card" type="button" data-character="riven">
-                <span class="fighter-portrait riven" aria-hidden="true"></span>
-                <span class="fighter-name"><b>RIVEN</b><small>THE EXILED GUARDIAN</small></span>
+              <button class="fighter-card" type="button" data-character="riven" aria-label="Select Riven">
+                <span class="fighter-portrait riven" aria-hidden="true"></span><span class="fighter-name">RIVEN</span>
               </button>
-              <div class="versus-mark" aria-hidden="true">VS</div>
-              <button class="fighter-card" type="button" data-character="veyra">
-                <span class="fighter-portrait veyra" aria-hidden="true"></span>
-                <span class="fighter-name"><b>VEYRA</b><small>THE STORM CHAMPION</small></span>
+              <button class="fighter-card" type="button" data-character="veyra" aria-label="Select Veyra">
+                <span class="fighter-portrait veyra" aria-hidden="true"></span><span class="fighter-name">VEYRA</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="kael" aria-label="Select Kael">
+                <span class="fighter-portrait kael" aria-hidden="true"></span><span class="fighter-name">KAEL</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="neris" aria-label="Select Neris">
+                <span class="fighter-portrait neris" aria-hidden="true"></span><span class="fighter-name">NERIS</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="vance" aria-label="Select Vance">
+                <span class="fighter-portrait vance" aria-hidden="true"></span><span class="fighter-name">VANCE</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="orun" aria-label="Select Orun">
+                <span class="fighter-portrait orun" aria-hidden="true"></span><span class="fighter-name">ORUN</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="serika" aria-label="Select Serika">
+                <span class="fighter-portrait serika" aria-hidden="true"></span><span class="fighter-name">SERIKA</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="ilyra" aria-label="Select Ilyra">
+                <span class="fighter-portrait ilyra" aria-hidden="true"></span><span class="fighter-name">ILYRA</span>
               </button>
             </div>
 
+            <div class="selection-strip" aria-live="polite">
+              <span><small>P1</small><b id="playerOneChoice">—</b></span>
+              <strong>VS</strong>
+              <span><small id="playerTwoLabel">CPU</small><b id="playerTwoChoice">RANDOM</b></span>
+            </div>
+
             <div class="select-actions">
-              <button class="text-button" id="backButton" type="button">← ANA MENÜ</button>
-              <button class="fight-button" id="fightButton" type="button" disabled>DÖVÜŞÜ BAŞLAT</button>
+              <button class="text-button" id="backButton" type="button">← MAIN MENU</button>
+              <button class="fight-button" id="fightButton" type="button" disabled>ENTER THE ARENA</button>
             </div>
           </section>
 
@@ -94,45 +113,46 @@
             <span id="winnerSubtitle">THE OATH HAS BEEN SEALED</span>
             <div class="result-actions">
               <button class="arcade-button primary compact" id="rematchButton" type="button">
-                <span><b>RÖVANŞ</b><small>Aynı dövüşçüler</small></span>
+                <span><b>REMATCH</b><small>A new CPU rival in solo mode</small></span>
               </button>
               <button class="arcade-button compact" id="menuButton" type="button">
-                <span><b>ANA MENÜ</b><small>Modu yeniden seç</small></span>
+                <span><b>MAIN MENU</b><small>Choose another mode</small></span>
               </button>
             </div>
           </section>
         </div>
       </section>
 
-      <section class="control-deck" aria-label="Arcade kabini kontrolleri">
+      <section class="control-deck" aria-label="Arcade cabinet controls">
         <div class="speaker-grille" aria-hidden="true">
           <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
         <div class="deck-actions">
-          <button id="soundButton" type="button" aria-pressed="false"><i class="red-lamp"></i> SES: AÇIK</button>
-          <button id="fullscreenButton" type="button"><i class="amber-lamp"></i> TAM EKRAN</button>
-          <button id="helpButton" type="button" aria-expanded="false"><i class="steel-lamp"></i> KONTROLLER</button>
+          <button id="soundButton" type="button" aria-pressed="false"><i class="red-lamp"></i> SOUND: ON</button>
+          <button id="fullscreenButton" type="button"><i class="amber-lamp"></i> FULLSCREEN</button>
+          <button id="helpButton" type="button" aria-expanded="false"><i class="steel-lamp"></i> CONTROLS</button>
         </div>
-        <div class="pad-status" id="padStatus"><i></i> OYUN KOLU BEKLENİYOR</div>
+        <div class="pad-status" id="padStatus"><i></i> WAITING FOR GAMEPAD</div>
       </section>
 
       <section class="instruction-panel" id="instructionPanel" hidden>
         <article>
-          <header><span>P1</span><b>OYUNCU BİR</b></header>
-          <div class="key-line"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><small>HAREKET</small></div>
-          <div class="key-line"><kbd>F</kbd><small>YÜKSEK YUMRUK</small><kbd>V</kbd><small>ALÇAK YUMRUK</small></div>
-          <div class="key-line"><kbd>G</kbd><small>BLOK</small><kbd>H</kbd><small>YÜKSEK TEKME</small><kbd>N</kbd><small>ALÇAK TEKME</small></div>
+          <header><span>P1</span><b>PLAYER ONE</b></header>
+          <div class="key-line"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><small>MOVE</small></div>
+          <div class="key-line"><kbd>F</kbd><small>HIGH PUNCH</small><kbd>V</kbd><small>LOW PUNCH</small></div>
+          <div class="key-line"><kbd>G</kbd><small>BLOCK</small><kbd>H</kbd><small>HIGH KICK</small><kbd>N</kbd><small>LOW KICK</small></div>
         </article>
         <article>
-          <header><span>P2</span><b>OYUNCU İKİ</b></header>
-          <div class="key-line"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd><small>HAREKET</small></div>
-          <div class="key-line"><kbd>J</kbd><small>YÜKSEK YUMRUK</small><kbd>M</kbd><small>ALÇAK YUMRUK</small></div>
-          <div class="key-line"><kbd>K</kbd><small>BLOK</small><kbd>L</kbd><small>YÜKSEK TEKME</small><kbd>.</kbd><small>ALÇAK TEKME</small></div>
+          <header><span>P2</span><b>PLAYER TWO</b></header>
+          <div class="key-line"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd><small>MOVE</small></div>
+          <div class="key-line"><kbd>J</kbd><small>HIGH PUNCH</small><kbd>M</kbd><small>LOW PUNCH</small></div>
+          <div class="key-line"><kbd>K</kbd><small>BLOCK</small><kbd>L</kbd><small>HIGH KICK</small><kbd>.</kbd><small>LOW KICK</small></div>
         </article>
         <article class="gamepad-help">
-          <header><span>PAD</span><b>OYUN KOLU</b></header>
-          <p>Yön tuşu veya sol analog ile hareket et. Yüz düğmeleri saldırıları, sol omuz bloğu kontrol eder.</p>
-          <p><kbd>ESC</kbd> veya <kbd>P</kbd> ile dövüşü duraklat.</p>
+          <header><span>PAD</span><b>GAMEPAD</b></header>
+          <p>Move with the D-pad or left stick. Face buttons attack; the left shoulder button blocks.</p>
+          <p>When <b>FINISH THEM</b> appears, press any attack to unleash your fighter's Oathbreaker.</p>
+          <p>Press <kbd>ESC</kbd> or <kbd>P</kbd> to pause.</p>
         </article>
       </section>
 
@@ -143,10 +163,10 @@
     </main>
 
     <p class="legal-note">
-      Blood Oath II özgün bir bağımsız projedir. Başka bir oyun, marka veya hak sahibiyle bağlantılı değildir.
+      Blood Oath II is an original independent game created as a copyright-safe tribute to the era of 1990s arcade fighters. It is not affiliated with Mortal Kombat, Warner Bros., or any other rights holder.
     </p>
 
-    <noscript>Bu oyunu çalıştırmak için JavaScript'i etkinleştirmen gerekiyor.</noscript>
+    <noscript>JavaScript is required to run this game.</noscript>
     <script type="module" src="app.js"></script>
   </body>
 </html>

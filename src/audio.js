@@ -84,6 +84,14 @@ export class AudioEngine {
       [110, 165, 220].forEach((frequency, index) => {
         this.tone({ frequency, endFrequency: frequency * 1.25, duration: 0.35, gain: 0.1, type: "square", delay: index * 0.12 });
       });
+    } else if (name === "finish") {
+      this.tone({ frequency: 74, endFrequency: 36, duration: 0.72, gain: 0.2, type: "sawtooth" });
+      this.tone({ frequency: 148, endFrequency: 72, duration: 0.62, gain: 0.12, type: "square", delay: 0.08 });
+    } else if (name === "finisher") {
+      this.noise(0.34, 0.22);
+      [55, 82.4, 110, 164.8].forEach((frequency, index) => {
+        this.tone({ frequency, endFrequency: frequency * 1.8, duration: 0.62, gain: 0.11, type: "sawtooth", delay: index * 0.1 });
+      });
     }
   }
 

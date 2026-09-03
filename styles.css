@@ -335,21 +335,42 @@ button:focus-visible { outline: 3px solid #fff3c5; outline-offset: 3px; }
 .arcade-button small { color: #947e64; font-size: 0.57rem; }
 .insert-coin { color: #e25b2f; animation: blink 1s steps(1, end) infinite; }
 
-.select-overlay { justify-content: space-between; background: rgba(4, 2, 2, 0.44); }
+.select-overlay {
+  justify-content: space-between;
+  padding: 2.2% 5%;
+  background: rgba(4, 2, 2, 0.48);
+}
+
+.select-overlay::before {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.5)),
+    radial-gradient(circle at 50% 48%, rgba(93, 32, 16, 0.12), rgba(0, 0, 0, 0.88) 82%);
+}
+
 .select-heading p,
 .select-heading h2,
 .select-heading span { display: block; margin: 0; }
-.select-heading p { color: #e74a28; font-size: clamp(0.48rem, 1vw, 0.68rem); letter-spacing: 0.3em; }
-.select-heading h2 { margin: 3px 0; color: #dfc99f; font-family: var(--serif); font-size: clamp(1.45rem, 3.2vw, 2.8rem); text-shadow: 2px 3px #190300; }
-.select-heading span { color: #9f8a6c; font-size: clamp(0.48rem, 0.9vw, 0.65rem); }
+.select-heading p { color: #e74a28; font-size: clamp(0.42rem, 0.82vw, 0.62rem); letter-spacing: 0.3em; }
+.select-heading h2 {
+  margin: 1px 0;
+  color: #f3d342;
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 3vw, 2.55rem);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-shadow: 2px 3px #5b0803, -1px -1px #fff2a2, 0 0 12px #000;
+}
+.select-heading span { color: #a99573; font-size: clamp(0.42rem, 0.78vw, 0.58rem); }
 
 .fighter-roster {
   display: grid;
-  width: min(760px, 92%);
-  min-height: 55%;
+  width: min(690px, 86%);
+  height: 60%;
   align-items: stretch;
-  grid-template-columns: 1fr auto 1fr;
-  gap: clamp(10px, 2vw, 24px);
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(4px, 0.8vw, 8px);
+  perspective: 700px;
 }
 
 .fighter-card {
@@ -358,60 +379,91 @@ button:focus-visible { outline: 3px solid #fff3c5; outline-offset: 3px; }
   min-width: 0;
   padding: 0;
   overflow: hidden;
-  border: 2px ridge #74552b;
+  border: 3px ridge #74552b;
   color: #dfcba7;
-  background: radial-gradient(circle at 50% 30%, rgba(127, 35, 21, 0.28), transparent 62%), rgba(8, 5, 4, 0.88);
-  box-shadow: inset 0 0 28px #000, 0 7px 0 #030202;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(127, 35, 21, 0.35), transparent 64%),
+    linear-gradient(#30241e, #090605);
+  box-shadow: inset 0 0 22px #000, 0 4px 0 #030202, 0 0 0 1px #110b07;
   cursor: pointer;
   grid-template-rows: 1fr auto;
+  transition: filter 100ms ease, transform 100ms ease;
 }
 
 .fighter-card:hover,
-.fighter-card.selected-p1,
-.fighter-card.selected-p2 { border-color: #db9a3c; filter: brightness(1.12); }
+.fighter-card:focus-visible { z-index: 2; border-color: #f2c449; filter: brightness(1.2); transform: scale(1.035); }
+.fighter-card.selected-p1 { z-index: 3; border-color: #ff3a20; box-shadow: 0 0 0 2px #781108, 0 0 18px #e82b18; filter: brightness(1.18); }
+.fighter-card.selected-p2 { z-index: 3; border-color: #f5ce47; box-shadow: 0 0 0 2px #7d5c0a, 0 0 18px #d7a82a; filter: brightness(1.18); }
 
 .fighter-card.selected-p1::after,
 .fighter-card.selected-p2::after {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 5px 7px;
+  z-index: 2;
+  top: 5px;
+  left: 5px;
+  padding: 3px 5px;
   color: white;
   background: #b52013;
   content: "P1";
+  font-size: 0.56rem;
   font-weight: bold;
   letter-spacing: 0.08em;
+  box-shadow: 1px 2px #1b0302;
 }
 
-.fighter-card.selected-p2::after { right: 8px; left: auto; color: #140d05; background: #e0a33c; content: "P2"; }
+.fighter-card.selected-p2::after { right: 5px; left: auto; color: #140d05; background: #e0a33c; content: "P2"; }
+.select-overlay.solo-selection .fighter-card.selected-p2::after { content: "CPU"; }
 
 .fighter-portrait {
   display: block;
   min-height: 0;
-  background-position: 0 0;
+  background-position: 0 5%;
   background-repeat: no-repeat;
-  background-size: 400% 200%;
-  filter: drop-shadow(0 8px 8px #000);
+  background-size: 400% auto;
+  filter: drop-shadow(0 5px 5px #000) saturate(0.92);
 }
 
 .fighter-portrait.riven { background-image: url("assets/riven-sprites.png"); }
 .fighter-portrait.veyra { background-image: url("assets/veyra-sprites.png"); }
+.fighter-portrait.kael { background-image: url("assets/kael-sprites.png"); }
+.fighter-portrait.neris { background-image: url("assets/neris-sprites.png"); }
+.fighter-portrait.vance { background-image: url("assets/vance-sprites.png"); }
+.fighter-portrait.orun { background-image: url("assets/orun-sprites.png"); }
+.fighter-portrait.serika { background-image: url("assets/serika-sprites.png"); }
+.fighter-portrait.ilyra { background-image: url("assets/ilyra-sprites.png"); }
 
 .fighter-name {
   display: block;
-  padding: 7px 9px;
+  padding: 4px 7px;
   border-top: 1px solid #694621;
-  background: linear-gradient(90deg, #2f0906, #0c0806 60%);
-  text-align: left;
+  color: #f0c96d;
+  background: linear-gradient(90deg, #310906, #0c0806 66%);
+  font-family: var(--serif);
+  font-size: clamp(0.56rem, 1.15vw, 0.92rem);
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 1px 2px #000;
 }
 
-.fighter-name b,
-.fighter-name small { display: block; }
-.fighter-name b { color: #e4bf76; font-family: var(--serif); font-size: clamp(0.8rem, 1.5vw, 1.22rem); letter-spacing: 0.08em; }
-.fighter-name small { color: #8e7451; font-size: clamp(0.4rem, 0.65vw, 0.52rem); letter-spacing: 0.12em; }
-
-.versus-mark { align-self: center; color: #d9361e; font-family: var(--serif); font-size: clamp(1.2rem, 3.2vw, 2.5rem); font-weight: bold; text-shadow: 2px 3px #230200; }
-.select-actions { display: flex; width: min(760px, 92%); align-items: center; justify-content: space-between; }
+.selection-strip {
+  display: grid;
+  width: min(520px, 72%);
+  min-height: 34px;
+  align-items: center;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  color: #aa8a56;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.7), transparent);
+}
+.selection-strip span { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.selection-strip span:last-child { justify-content: flex-start; }
+.selection-strip small { padding: 3px 4px; color: white; background: #99170f; font-size: 0.48rem; }
+.selection-strip span:last-child small { color: #1a1003; background: #d9a534; }
+.selection-strip b { color: #e2c88e; font-family: var(--serif); font-size: clamp(0.68rem, 1.15vw, 0.95rem); letter-spacing: 0.08em; }
+.selection-strip strong { color: #da321d; font-family: var(--serif); font-size: 1.2rem; text-shadow: 2px 2px #2b0200; }
+.select-actions { display: flex; width: min(690px, 86%); align-items: center; justify-content: space-between; }
 
 .text-button,
 .fight-button { border: 0; cursor: pointer; font-size: clamp(0.5rem, 0.8vw, 0.66rem); font-weight: bold; letter-spacing: 0.11em; }
@@ -535,8 +587,25 @@ noscript { position: fixed; z-index: 50; right: 18px; bottom: 18px; left: 18px; 
   .button-number { width: 25px; font-size: 0.85rem; }
   .arcade-button b { font-size: 0.53rem; }
   .arcade-button small { display: none; }
-  .fighter-roster { min-height: 58%; }
-  .select-actions { margin-top: 5px; }
+  .select-overlay { padding: 1.5% 3%; }
+  .select-heading h2 { font-size: clamp(0.95rem, 5.5vw, 1.45rem); }
+  .select-heading p,
+  .select-heading span { font-size: 0.36rem; }
+  .fighter-roster { width: 94%; height: 56%; min-height: 0; gap: 2px; }
+  .fighter-card { border-width: 1px; }
+  .fighter-name { padding: 2px; font-size: 0.42rem; }
+  .fighter-card.selected-p1::after,
+  .fighter-card.selected-p2::after { top: 2px; padding: 2px 3px; font-size: 0.36rem; }
+  .fighter-card.selected-p1::after { left: 2px; }
+  .fighter-card.selected-p2::after { right: 2px; }
+  .selection-strip { width: 82%; min-height: 18px; gap: 6px; }
+  .selection-strip small { padding: 1px 2px; font-size: 0.34rem; }
+  .selection-strip b { font-size: 0.48rem; }
+  .selection-strip strong { font-size: 0.72rem; }
+  .select-actions { width: 94%; margin-top: 0; }
+  .text-button,
+  .fight-button { font-size: 0.38rem; }
+  .fight-button { padding: 5px 7px; border-width: 1px; }
   .control-deck { min-height: 72px; padding: 12px; }
   .speaker-grille,
   .pad-status { display: none; }

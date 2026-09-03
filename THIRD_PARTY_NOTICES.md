@@ -2,12 +2,24 @@
 
 ## Runtime dependencies
 
-Bu proje çalışma zamanında üçüncü taraf JavaScript kütüphanesi, emülatör çekirdeği, CDN veya ROM kullanmaz.
+This game uses no third-party JavaScript library, emulator core, CDN dependency, or ROM at runtime.
 
 ## Visual assets
 
-`assets/arena-moon-temple.png`, `assets/riven-sprites.png` ve `assets/veyra-sprites.png` bu proje için yapay zekâ destekli araçlarla sıfırdan üretilmiş özgün görsel varlıklardır. Kaynak olarak başka bir oyuna ait görsel, sprite, ekran görüntüsü, logo veya ticari varlık kullanılmamıştır.
+The following original visual assets were generated from scratch with AI-assisted tools specifically for this project:
+
+- `assets/arena-moon-temple.png`
+- `assets/riven-sprites.png`
+- `assets/veyra-sprites.png`
+- `assets/kael-sprites.png`
+- `assets/neris-sprites.png`
+- `assets/vance-sprites.png`
+- `assets/orun-sprites.png`
+- `assets/serika-sprites.png`
+- `assets/ilyra-sprites.png`
+
+No sprite, screenshot, logo, portrait, stage, or commercial asset from another game was used as source material.
 
 ## Audio
 
-Tüm efektler ve ambiyans tarayıcıda Web Audio API ile gerçek zamanlı olarak sentezlenir. Örneklenmiş üçüncü taraf ses dosyası bulunmaz.
+All sound effects and ambience are synthesized in real time in the browser through the Web Audio API. The repository contains no sampled third-party audio files.

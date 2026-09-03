@@ -1,4 +1,5 @@
 import { AudioEngine } from "./src/audio.js";
+import { CHARACTERS } from "./src/config.js";
 import { ArenaGame } from "./src/game.js";
 import { InputManager } from "./src/input.js";
 
@@ -11,6 +12,9 @@ const elements = {
   resultOverlay: document.querySelector("#resultOverlay"),
   selectionEyebrow: document.querySelector("#selectionEyebrow"),
   selectionStatus: document.querySelector("#selectionStatus"),
+  playerOneChoice: document.querySelector("#playerOneChoice"),
+  playerTwoChoice: document.querySelector("#playerTwoChoice"),
+  playerTwoLabel: document.querySelector("#playerTwoLabel"),
   fighterCards: [...document.querySelectorAll("[data-character]")],
   modeButtons: [...document.querySelectorAll("[data-mode]")],
   fightButton: document.querySelector("#fightButton"),
@@ -31,6 +35,12 @@ const input = new InputManager();
 const audio = new AudioEngine();
 let selectedMode = "solo";
 let selections = { playerOne: null, playerTwo: null };
+const characterIds = Object.keys(CHARACTERS);
+
+function randomOpponent(excludedCharacter) {
+  const candidates = characterIds.filter((character) => character !== excludedCharacter);
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
 
 function showOverlay(target) {
   [elements.loadingOverlay, elements.titleOverlay, elements.selectOverlay, elements.resultOverlay]
@@ -44,18 +54,22 @@ function updateRoster() {
     card.classList.toggle("selected-p2", character === selections.playerTwo);
   }
 
+  elements.playerOneChoice.textContent = selections.playerOne ? CHARACTERS[selections.playerOne].name : "—";
+  elements.playerTwoChoice.textContent = selections.playerTwo ? CHARACTERS[selections.playerTwo].name : (selectedMode === "solo" ? "RANDOM" : "—");
+  elements.playerTwoLabel.textContent = selectedMode === "solo" ? "CPU" : "P2";
+
   if (!selections.playerOne) {
-    elements.selectionEyebrow.textContent = "OYUNCU 1";
-    elements.selectionStatus.textContent = "İlk dövüşçüyü seç";
+    elements.selectionEyebrow.textContent = "PLAYER ONE";
+    elements.selectionStatus.textContent = "Select your warrior";
   } else if (selectedMode === "versus" && !selections.playerTwo) {
-    elements.selectionEyebrow.textContent = "OYUNCU 2";
-    elements.selectionStatus.textContent = "Rakip dövüşçüyü seç";
+    elements.selectionEyebrow.textContent = "PLAYER TWO";
+    elements.selectionStatus.textContent = "Choose the opposing warrior";
   } else if (selectedMode === "solo") {
-    elements.selectionEyebrow.textContent = "TEK OYUNCU";
-    elements.selectionStatus.textContent = "Rakibin hazır. Arena seni bekliyor.";
+    elements.selectionEyebrow.textContent = "SINGLE PLAYER";
+    elements.selectionStatus.textContent = `CPU rival drawn: ${CHARACTERS[selections.playerTwo].name}`;
   } else {
     elements.selectionEyebrow.textContent = "VERSUS";
-    elements.selectionStatus.textContent = "İki savaşçı da hazır.";
+    elements.selectionStatus.textContent = "Both warriors are ready";
   }
   elements.fightButton.disabled = !(selections.playerOne && selections.playerTwo);
 }
@@ -63,25 +77,25 @@ function updateRoster() {
 function openCharacterSelect(mode) {
   selectedMode = mode;
   selections = { playerOne: null, playerTwo: null };
+  elements.selectOverlay.classList.toggle("solo-selection", mode === "solo");
   updateRoster();
   showOverlay(elements.selectOverlay);
 }
 
 function chooseCharacter(character) {
-  if (!selections.playerOne) {
+  if (selectedMode === "solo") {
     selections.playerOne = character;
-    if (selectedMode === "solo") selections.playerTwo = character === "riven" ? "veyra" : "riven";
-  } else if (selectedMode === "versus" && !selections.playerTwo) {
+    selections.playerTwo = randomOpponent(character);
+  } else if (!selections.playerOne) {
+    selections.playerOne = character;
+  } else if (!selections.playerTwo) {
     if (character === selections.playerOne) {
-      elements.selectionStatus.textContent = "Bu karşılaşmada diğer dövüşçüyü seç.";
+      elements.selectionStatus.textContent = "Choose a different warrior for this match";
       return;
     }
     selections.playerTwo = character;
   } else {
-    selections = {
-      playerOne: character,
-      playerTwo: selectedMode === "solo" ? (character === "riven" ? "veyra" : "riven") : null,
-    };
+    selections = { playerOne: character, playerTwo: null };
   }
   updateRoster();
 }
@@ -102,9 +116,11 @@ function returnToMenu() {
 }
 
 const game = new ArenaGame(elements.canvas, input, audio, {
-  onMatchEnd: ({ winner, score }) => {
+  onMatchEnd: ({ winner, score, finisher }) => {
     elements.winnerName.textContent = `${winner.name} WINS`;
-    elements.winnerSubtitle.textContent = `${winner.epithet} · ${score}`;
+    elements.winnerSubtitle.textContent = finisher
+      ? `${winner.finisher} · OATHBREAKER · ${score}`
+      : `${winner.epithet} · ${score}`;
     showOverlay(elements.resultOverlay);
   },
 });
@@ -122,14 +138,19 @@ elements.menuButton.addEventListener("click", returnToMenu);
 elements.rematchButton.addEventListener("click", () => {
   void audio.unlock();
   showOverlay(null);
-  game.rematch();
+  if (selectedMode === "solo") {
+    selections.playerTwo = randomOpponent(selections.playerOne);
+    game.startMatch({ mode: selectedMode, playerOne: selections.playerOne, playerTwo: selections.playerTwo });
+  } else {
+    game.rematch();
+  }
 });
 
 elements.soundButton.addEventListener("click", () => {
   void audio.unlock();
   const enabled = audio.toggle();
   elements.soundButton.setAttribute("aria-pressed", String(!enabled));
-  elements.soundButton.innerHTML = `<i class="red-lamp"></i> SES: ${enabled ? "AÇIK" : "KAPALI"}`;
+  elements.soundButton.innerHTML = `<i class="red-lamp"></i> SOUND: ${enabled ? "ON" : "OFF"}`;
 });
 
 elements.fullscreenButton.addEventListener("click", async () => {
@@ -137,12 +158,12 @@ elements.fullscreenButton.addEventListener("click", async () => {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await elements.screen.requestFullscreen();
   } catch {
-    elements.fullscreenButton.textContent = "TAM EKRAN DESTEKLENMİYOR";
+    elements.fullscreenButton.textContent = "FULLSCREEN UNAVAILABLE";
   }
 });
 
 document.addEventListener("fullscreenchange", () => {
-  elements.fullscreenButton.innerHTML = `<i class="amber-lamp"></i> ${document.fullscreenElement ? "TAM EKRANDAN ÇIK" : "TAM EKRAN"}`;
+  elements.fullscreenButton.innerHTML = `<i class="amber-lamp"></i> ${document.fullscreenElement ? "EXIT FULLSCREEN" : "FULLSCREEN"}`;
 });
 
 elements.helpButton.addEventListener("click", () => {
@@ -153,7 +174,7 @@ elements.helpButton.addEventListener("click", () => {
 
 function updatePadStatus() {
   const count = input.connectedPads().length;
-  elements.padStatus.innerHTML = `<i></i> ${count ? `${count} OYUN KOLU BAĞLI` : "OYUN KOLU BEKLENİYOR"}`;
+  elements.padStatus.innerHTML = `<i></i> ${count ? `${count} GAMEPAD${count > 1 ? "S" : ""} CONNECTED` : "WAITING FOR GAMEPAD"}`;
   elements.padStatus.classList.toggle("connected", count > 0);
 }
 
@@ -167,6 +188,6 @@ game.load((progress) => {
   showOverlay(elements.titleOverlay);
   updatePadStatus();
 }).catch((error) => {
-  elements.loadingOverlay.querySelector("p").textContent = "ARENA YÜKLENEMEDİ";
+  elements.loadingOverlay.querySelector("p").textContent = "THE ARENA COULD NOT AWAKEN";
   elements.loadingOverlay.querySelector("p").title = error.message;
 });

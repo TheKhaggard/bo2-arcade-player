@@ -1,80 +1,58 @@
-# Mortal Kombat II — Local Arcade Player
+# BLOOD OATH II
 
-1993 arcade sürümünü kullanıcının kendi yasal ROM arşivinden çalıştıran, iki
-oyunculu tarayıcı arayüzü. Proje oyun verisi içermez ve ROM'u hiçbir sunucuya
-yüklemez.
+> **The moon is broken. The oath remains. Enter the arena.**
 
-> [!IMPORTANT]
-> Bu depo Mortal Kombat II ROM'u, sprite'ları, sesleri, müzikleri veya diğer
-> telifli oyun varlıklarını içermez. ROM istemeyin, paylaşmayın veya repoya
-> commit etmeyin.
+Blood Oath II, tarayıcıda anında çalışan özgün bir 2D karanlık fantezi arcade dövüş oyunudur. Kurulum, indirme veya ROM gerekmez: sayfayı aç, dövüşçünü seç ve başla.
+
+## Oyunu aç
+
+**[GitHub Pages üzerinde oyna →](https://thekhaggard.github.io/mk2-arcade-player/)**
 
 ## Özellikler
 
-- MAME 2003-Plus tabanlı 1993 arcade emülasyonu
-- Aynı klavyede iki oyuncu
-- İki gamepad desteği ve oyun içinden yeniden eşleme
-- Sürükle-bırak `mk2.zip` seçimi
-- ZIP imzası, boyut ve yerel SHA-256 parmak izi kontrolü
-- Mobil uyumlu retro arcade arayüzü
-- GitHub Actions ile otomatik GitHub Pages dağıtımı
-- Bağımlılıksız statik frontend
+- Tek oyuncu: bilgisayar kontrollü rakibe karşı
+- Yerel versus: aynı klavyede iki oyuncu
+- İki oyun kolu desteği (Gamepad API)
+- İki özgün dövüşçü: Riven ve Veyra
+- En iyi üç raunt sistemi, zamanlayıcı, blok, dört saldırı ve nakavt
+- Web Audio ile üretilen özgün arcade sesleri
+- Tam ekran ve duyarlı arcade kabini arayüzü
+- Saf HTML, CSS ve JavaScript; harici çalışma zamanı bağımlılığı yok
+
+## Kontroller
+
+|                   | Oyuncu 1          | Oyuncu 2             | Oyun kolu             |
+|-------------------|-------------------|----------------------|-----------------------|
+| Hareket           | `W` `A` `S` `D` | Yön tuşları          | Sol analog / D-pad    |
+| Yüksek yumruk     | `F`               | `J`                  | Yüz düğmesi           |
+| Alçak yumruk      | `V`               | `M`                  | Yüz düğmesi           |
+| Blok              | `G`               | `K`                  | Sol omuz              |
+| Yüksek tekme      | `H`               | `L`                  | Yüz düğmesi           |
+| Alçak tekme       | `N`               | `.`                  | Yüz düğmesi           |
+| Duraklat          | `P` / `Esc`       | `P` / `Esc`          | Start                 |
 
 ## Yerelde çalıştırma
 
-Python 3 bulunan proje klasöründe:
+ES modülleri nedeniyle projeyi küçük bir HTTP sunucusuyla aç:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Ardından `http://localhost:8080` adresini açın. Siteyi doğrudan `file://`
-üzerinden açmak tarayıcı güvenlik politikaları nedeniyle desteklenmez.
+Ardından `http://localhost:8080` adresine git.
 
-1. Yasal olarak sahip olduğunuz, MAME 2003-Plus ile uyumlu `mk2.zip` arşivini seçin.
-2. **Arcade'i Başlat** düğmesine basın.
-3. İki kişilik oyun için iki jeton ekleyin ve P2 başlat tuşuna basın.
+## Geliştirme
 
-EmulatorJS çekirdeği ilk açılışta resmi CDN üzerinden indirilir. ROM için
-herhangi bir uzaktaki URL kullanılmaz; tarayıcının oluşturduğu geçici yerel
-`blob:` adresi kullanılır.
-
-## Varsayılan kontroller
-
-| İşlem | Oyuncu 1 | Oyuncu 2 |
-|---|---:|---:|
-| Yönler | `W` `A` `S` `D` | Ok tuşları |
-| High Punch | `F` | `J` |
-| Low Punch | `V` | `M` |
-| Block | `G` | `K` |
-| High Kick | `H` | `L` |
-| Low Kick | `N` | `.` |
-| Jeton | `5` | `6` |
-| Başlat | `1` | `2` |
-
-Gamepad düğmeleri tarayıcı ve kontrolcü modeline göre farklı görünebilir.
-Emülatör araç çubuğundaki kontrol ayarından P1–P4 eşlemeleri değiştirilebilir.
-
-## Test
+Statik kontrolleri çalıştırmak için:
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-Testler zorunlu dosyaları, emülatör sürüm sabitlemesini ve repoda ROM/disk
-dosyası bulunmadığını denetler.
+`main` dalına gönderilen her commit, GitHub Actions testlerinden geçtikten sonra GitHub Pages'a otomatik dağıtılır.
 
-## GitHub Pages
+## Yasal not
 
-`.github/workflows/pages.yml`, `main` dalına her push işleminde testleri çalıştırır
-ve siteyi Pages ortamına gönderir. GitHub deposunda **Settings → Pages → Source**
-alanını **GitHub Actions** olarak seçmek yeterlidir.
+Blood Oath II; karakterleri, dünyası, kodu ve görselleriyle özgün bir bağımsız projedir. Mortal Kombat veya başka bir oyun serisiyle bağlantılı değildir ve bunlara ait ROM, sprite, ses, logo ya da oyun verisi içermez.
 
-## Lisans ve markalar
-
-Bu depodaki özgün arayüz kodu [MIT Lisansı](LICENSE) ile sunulur. Emülatör
-bileşenleri ayrı lisanslara tabidir; ayrıntılar için
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) dosyasına bakın.
-
-Mortal Kombat II ve ilgili adlar/markalar kendi hak sahiplerine aittir. Bu proje
-Midway, Warner Bros. Discovery veya bağlı şirketlerce desteklenmez.
+Kod [MIT Lisansı](LICENSE) ile sunulur. Görsel varlıklar için [üçüncü taraf ve varlık notlarına](THIRD_PARTY_NOTICES.md) bakabilirsin.

@@ -1,19 +1,13 @@
-# Third-party notices
+# Third-Party and Asset Notices
 
-Bu proje çalışma zamanında aşağıdaki üçüncü taraf bileşenlerini resmi CDN'den
-yükler. Bu bileşenler bu depoda yeniden dağıtılmaz.
+## Runtime dependencies
 
-## EmulatorJS 4.2.3
+Bu proje çalışma zamanında üçüncü taraf JavaScript kütüphanesi, emülatör çekirdeği, CDN veya ROM kullanmaz.
 
-- Proje: <https://github.com/EmulatorJS/EmulatorJS>
-- Lisans: GNU General Public License v3.0
-- Sabit veri yolu: <https://cdn.emulatorjs.org/4.2.3/data/>
+## Visual assets
 
-## MAME 2003-Plus libretro core
+`assets/arena-moon-temple.png`, `assets/riven-sprites.png` ve `assets/veyra-sprites.png` bu proje için yapay zekâ destekli araçlarla sıfırdan üretilmiş özgün görsel varlıklardır. Kaynak olarak başka bir oyuna ait görsel, sprite, ekran görüntüsü, logo veya ticari varlık kullanılmamıştır.
 
-- Proje: <https://github.com/libretro/mame2003-plus-libretro>
-- Lisans: MAME 0.78 / MAME 2003-Plus non-commercial license; tekil kaynak
-  dosyalarında farklı bildirimler bulunabilir.
+## Audio
 
-MAME 2003-Plus çalışmak için kullanıcının sağlaması gereken orijinal ROM
-görüntülerine ihtiyaç duyar. Bu proje hiçbir ROM görüntüsü sağlamaz.
+Tüm efektler ve ambiyans tarayıcıda Web Audio API ile gerçek zamanlı olarak sentezlenir. Örneklenmiş üçüncü taraf ses dosyası bulunmaz.

@@ -5,221 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Mortal Kombat II (1993) için tarayıcı tabanlı, yerel ROM kullanan iki oyunculu arcade oynatıcı."
+      content="Blood Oath II — tek veya iki oyunculu, tarayıcıda anında oynanan özgün karanlık fantezi arcade dövüş oyunu."
     />
-    <meta name="theme-color" content="#090706" />
-    <title>Mortal Kombat II — Local Arcade Player</title>
+    <meta name="theme-color" content="#160605" />
+    <title>Blood Oath II — Arcade Fighting Game</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="assets/arena-moon-temple.png" as="image" />
+    <link rel="preload" href="assets/riven-sprites.png" as="image" />
+    <link rel="preload" href="assets/veyra-sprites.png" as="image" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="noise" aria-hidden="true"></div>
+    <div class="cabinet-glow" aria-hidden="true"></div>
 
-    <header class="site-header">
-      <a class="brand" href="./" aria-label="Ana ekrana dön">
-        <span class="brand-mark" aria-hidden="true">II</span>
-        <span>
-          <strong>LOCAL ARCADE</strong>
-          <small>1993 SYSTEM</small>
-        </span>
-      </a>
+    <main class="arcade-cabinet">
+      <header class="marquee">
+        <div class="marquee-rivets" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <p class="marquee-kicker">THE ETERNAL TOURNAMENT</p>
+        <h1>BLOOD OATH <strong>II</strong></h1>
+        <p class="marquee-subtitle">WARRIORS OF THE SHATTERED MOON</p>
+      </header>
 
-      <div class="connection-status" aria-label="Bağlı oyun kolları">
-        <span class="status-dot" id="gamepadDot" aria-hidden="true"></span>
-        <span id="gamepadStatus">Oyun kolu bekleniyor</span>
-      </div>
-    </header>
+      <section class="bezel" aria-label="Blood Oath II oyun ekranı">
+        <div class="screen" id="screen">
+          <canvas id="gameCanvas" width="960" height="540">
+            Tarayıcınız canvas özelliğini desteklemiyor.
+          </canvas>
+          <div class="screen-shade" aria-hidden="true"></div>
+          <div class="scanlines" aria-hidden="true"></div>
+          <div class="glass-glare" aria-hidden="true"></div>
 
-    <main id="launcher">
-      <section class="hero" aria-labelledby="gameTitle">
-        <div class="hero-copy">
-          <p class="eyebrow">MIDWAY · 1993 ARCADE</p>
-          <h1 id="gameTitle">
-            <span>Mortal Kombat</span>
-            <em>II</em>
-          </h1>
-          <p class="lede">
-            Orijinal arcade sürümünü kendi yasal ROM arşivinle, aynı klavyede
-            veya iki oyun koluyla çalıştır.
-          </p>
+          <section class="game-overlay loading-overlay" id="loadingOverlay" aria-live="polite">
+            <div class="loading-seal" aria-hidden="true"><span>II</span></div>
+            <p>ARENA UYANDIRILIYOR</p>
+            <div class="loading-bar"><i id="loadingProgress"></i></div>
+          </section>
 
-          <div class="privacy-note">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2 4 5v6c0 5.2 3.4 9.8 8 11 4.6-1.2 8-5.8 8-11V5l-8-3Zm0 4.2a3 3 0 0 1 3 3v1h.5a.5.5 0 0 1 .5.5v4.8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-4.8a.5.5 0 0 1 .5-.5H9v-1a3 3 0 0 1 3-3Zm0 1.4a1.6 1.6 0 0 0-1.6 1.6v1h3.2v-1A1.6 1.6 0 0 0 12 7.6Z" />
-            </svg>
-            <span>ROM cihazından ayrılmaz ve hiçbir sunucuya yüklenmez.</span>
-          </div>
-        </div>
-
-        <div class="loader-panel">
-          <div class="panel-heading">
-            <span>01</span>
-            <div>
-              <p>ROM ARŞİVİ</p>
-              <h2>Oyunu hazırla</h2>
+          <section class="game-overlay title-overlay" id="titleOverlay" hidden>
+            <div class="title-crest" aria-hidden="true">
+              <span class="crest-blade left"></span>
+              <b>II</b>
+              <span class="crest-blade right"></span>
             </div>
-          </div>
+            <p class="tournament-line">THE ETERNAL TOURNAMENT PRESENTS</p>
+            <h2>BLOOD OATH <em>II</em></h2>
+            <p class="title-tagline">ONLY ONE OATH SURVIVES THE NIGHT</p>
+            <div class="arcade-menu">
+              <button class="arcade-button primary" type="button" data-mode="solo">
+                <span class="button-number">1</span>
+                <span><b>TEK OYUNCU</b><small>Bilgisayara karşı</small></span>
+              </button>
+              <button class="arcade-button" type="button" data-mode="versus">
+                <span class="button-number">2</span>
+                <span><b>İKİ OYUNCU</b><small>Aynı klavye veya iki kol</small></span>
+              </button>
+            </div>
+            <p class="insert-coin">SEÇİM YAP · DÖVÜŞ BAŞLASIN</p>
+          </section>
 
-          <input id="romInput" type="file" accept=".zip,application/zip" hidden />
-          <label class="drop-zone" id="dropZone" for="romInput" tabindex="0">
-            <span class="drop-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 3v12m0-12L7.5 7.5M12 3l4.5 4.5M5 14v5h14v-5" />
-              </svg>
-            </span>
-            <strong id="romName">mk2.zip dosyasını seç</strong>
-            <span id="romMeta">Buraya sürükleyebilir veya gözatabilirsin</span>
-          </label>
+          <section class="game-overlay select-overlay" id="selectOverlay" hidden>
+            <header class="select-heading">
+              <p id="selectionEyebrow">OYUNCU 1</p>
+              <h2>DÖVÜŞÇÜNÜ SEÇ</h2>
+              <span id="selectionStatus">Bir savaşçı seç</span>
+            </header>
 
-          <div class="validation-status" id="validationStatus" role="status" aria-live="polite">
-            <span class="mini-dot" aria-hidden="true"></span>
-            <span>MAME 2003-Plus uyumlu arşiv bekleniyor</span>
-          </div>
-
-          <button class="primary-button" id="startButton" type="button" disabled>
-            <span>ARCADE'İ BAŞLAT</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m9 5 7 7-7 7" />
-            </svg>
-          </button>
-
-          <p class="loader-footnote">
-            ROM dahil değildir. Arşivin adı tercihen <code>mk2.zip</code> olmalıdır.
-          </p>
-        </div>
-      </section>
-
-      <section class="controls-section" aria-labelledby="controlsTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">2 PLAYER · LOCAL VERSUS</p>
-            <h2 id="controlsTitle">Kontroller</h2>
-          </div>
-          <p>Oyun başladıktan sonra araç çubuğundaki kontrol simgesinden tüm tuşları değiştirebilirsin.</p>
-        </div>
-
-        <div class="control-grid">
-          <article class="control-card player-one">
-            <div class="player-label">
-              <span>P1</span>
-              <div>
-                <small>OYUNCU BİR</small>
-                <strong>Klavye sol taraf</strong>
-              </div>
+            <div class="fighter-roster" id="fighterRoster">
+              <button class="fighter-card" type="button" data-character="riven">
+                <span class="fighter-portrait riven" aria-hidden="true"></span>
+                <span class="fighter-name"><b>RIVEN</b><small>THE EXILED GUARDIAN</small></span>
+              </button>
+              <div class="versus-mark" aria-hidden="true">VS</div>
+              <button class="fighter-card" type="button" data-character="veyra">
+                <span class="fighter-portrait veyra" aria-hidden="true"></span>
+                <span class="fighter-name"><b>VEYRA</b><small>THE STORM CHAMPION</small></span>
+              </button>
             </div>
 
-            <div class="mapping-row">
-              <div class="dpad" aria-label="W A S D yön tuşları">
-                <kbd class="up">W</kbd>
-                <kbd class="left">A</kbd>
-                <kbd class="down">S</kbd>
-                <kbd class="right">D</kbd>
-              </div>
-              <div class="fight-buttons" aria-label="Oyuncu bir saldırı tuşları">
-                <span><kbd>F</kbd><small>HP</small></span>
-                <span><kbd>G</kbd><small>BL</small></span>
-                <span><kbd>H</kbd><small>HK</small></span>
-                <span><kbd>V</kbd><small>LP</small></span>
-                <span class="empty" aria-hidden="true"></span>
-                <span><kbd>N</kbd><small>LK</small></span>
-              </div>
+            <div class="select-actions">
+              <button class="text-button" id="backButton" type="button">← ANA MENÜ</button>
+              <button class="fight-button" id="fightButton" type="button" disabled>DÖVÜŞÜ BAŞLAT</button>
             </div>
-            <div class="utility-keys"><span><kbd>5</kbd> Jeton</span><span><kbd>1</kbd> Başlat</span></div>
-          </article>
+          </section>
 
-          <article class="control-card player-two">
-            <div class="player-label">
-              <span>P2</span>
-              <div>
-                <small>OYUNCU İKİ</small>
-                <strong>Klavye sağ taraf</strong>
-              </div>
+          <section class="game-overlay result-overlay" id="resultOverlay" hidden>
+            <p>MATCH COMPLETE</p>
+            <h2 id="winnerName">RIVEN WINS</h2>
+            <span id="winnerSubtitle">THE OATH HAS BEEN SEALED</span>
+            <div class="result-actions">
+              <button class="arcade-button primary compact" id="rematchButton" type="button">
+                <span><b>RÖVANŞ</b><small>Aynı dövüşçüler</small></span>
+              </button>
+              <button class="arcade-button compact" id="menuButton" type="button">
+                <span><b>ANA MENÜ</b><small>Modu yeniden seç</small></span>
+              </button>
             </div>
-
-            <div class="mapping-row">
-              <div class="dpad" aria-label="Ok yön tuşları">
-                <kbd class="up">↑</kbd>
-                <kbd class="left">←</kbd>
-                <kbd class="down">↓</kbd>
-                <kbd class="right">→</kbd>
-              </div>
-              <div class="fight-buttons" aria-label="Oyuncu iki saldırı tuşları">
-                <span><kbd>J</kbd><small>HP</small></span>
-                <span><kbd>K</kbd><small>BL</small></span>
-                <span><kbd>L</kbd><small>HK</small></span>
-                <span><kbd>M</kbd><small>LP</small></span>
-                <span class="empty" aria-hidden="true"></span>
-                <span><kbd>.</kbd><small>LK</small></span>
-              </div>
-            </div>
-            <div class="utility-keys"><span><kbd>6</kbd> Jeton</span><span><kbd>2</kbd> Başlat</span></div>
-          </article>
-
-          <article class="control-card gamepad-card">
-            <div class="player-label">
-              <span class="gamepad-symbol" aria-hidden="true">✦</span>
-              <div>
-                <small>TAK · EŞLEŞTİR · DÖVÜŞ</small>
-                <strong>Oyun kolları</strong>
-              </div>
-            </div>
-            <p>
-              Birinci ve ikinci bağlı kol otomatik olarak P1 ve P2 olur. Xbox,
-              PlayStation ve çoğu USB/Bluetooth kol tarayıcı üzerinden desteklenir.
-            </p>
-            <div class="gamepad-slots" aria-live="polite">
-              <span id="padOne"><i></i>P1 — Bağlı değil</span>
-              <span id="padTwo"><i></i>P2 — Bağlı değil</span>
-            </div>
-          </article>
-        </div>
-
-        <div class="legend" aria-label="Kontrol kısaltmaları">
-          <span><b>HP</b> High Punch</span>
-          <span><b>LP</b> Low Punch</span>
-          <span><b>BL</b> Block</span>
-          <span><b>HK</b> High Kick</span>
-          <span><b>LK</b> Low Kick</span>
+          </section>
         </div>
       </section>
 
-      <section class="legal-section">
-        <div>
-          <span class="legal-mark" aria-hidden="true">!</span>
-          <p>
-            <strong>Yalnızca sahip olduğun oyun kopyasını kullan.</strong>
-            Bu açık kaynak oynatıcı ROM veya başka telifli oyun verisi içermez.
-          </p>
+      <section class="control-deck" aria-label="Arcade kabini kontrolleri">
+        <div class="speaker-grille" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
-        <p>
-          Mortal Kombat II ve ilgili markalar hak sahiplerine aittir. Bu proje
-          Midway, Warner Bros. Discovery veya bağlı şirketlerce desteklenmez.
-        </p>
+        <div class="deck-actions">
+          <button id="soundButton" type="button" aria-pressed="false"><i class="red-lamp"></i> SES: AÇIK</button>
+          <button id="fullscreenButton" type="button"><i class="amber-lamp"></i> TAM EKRAN</button>
+          <button id="helpButton" type="button" aria-expanded="false"><i class="steel-lamp"></i> KONTROLLER</button>
+        </div>
+        <div class="pad-status" id="padStatus"><i></i> OYUN KOLU BEKLENİYOR</div>
       </section>
+
+      <section class="instruction-panel" id="instructionPanel" hidden>
+        <article>
+          <header><span>P1</span><b>OYUNCU BİR</b></header>
+          <div class="key-line"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><small>HAREKET</small></div>
+          <div class="key-line"><kbd>F</kbd><small>YÜKSEK YUMRUK</small><kbd>V</kbd><small>ALÇAK YUMRUK</small></div>
+          <div class="key-line"><kbd>G</kbd><small>BLOK</small><kbd>H</kbd><small>YÜKSEK TEKME</small><kbd>N</kbd><small>ALÇAK TEKME</small></div>
+        </article>
+        <article>
+          <header><span>P2</span><b>OYUNCU İKİ</b></header>
+          <div class="key-line"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd><small>HAREKET</small></div>
+          <div class="key-line"><kbd>J</kbd><small>YÜKSEK YUMRUK</small><kbd>M</kbd><small>ALÇAK YUMRUK</small></div>
+          <div class="key-line"><kbd>K</kbd><small>BLOK</small><kbd>L</kbd><small>YÜKSEK TEKME</small><kbd>.</kbd><small>ALÇAK TEKME</small></div>
+        </article>
+        <article class="gamepad-help">
+          <header><span>PAD</span><b>OYUN KOLU</b></header>
+          <p>Yön tuşu veya sol analog ile hareket et. Yüz düğmeleri saldırıları, sol omuz bloğu kontrol eder.</p>
+          <p><kbd>ESC</kbd> veya <kbd>P</kbd> ile dövüşü duraklat.</p>
+        </article>
+      </section>
+
+      <footer class="cabinet-footer">
+        <p>© 2026 THEKHAGGARD · ORIGINAL ARCADE GAME</p>
+        <p>NO ROMS · NO DOWNLOADS · PLAY INSTANTLY</p>
+      </footer>
     </main>
 
-    <section id="emulatorScreen" class="emulator-screen" hidden aria-label="Arcade emülatörü">
-      <header class="emulator-header">
-        <div>
-          <span class="live-indicator"><i></i> ARCADE LIVE</span>
-          <strong>MORTAL KOMBAT II · 1993</strong>
-        </div>
-        <button id="exitButton" type="button">ROM'U KAPAT</button>
-      </header>
-      <div class="emulator-stage">
-        <div id="game"></div>
-      </div>
-      <p class="emulator-help" id="emulatorHelp" role="status" aria-live="polite">
-        Emülatör hazırlanıyor…
-      </p>
-    </section>
+    <p class="legal-note">
+      Blood Oath II özgün bir bağımsız projedir. Başka bir oyun, marka veya hak sahibiyle bağlantılı değildir.
+    </p>
 
-    <footer class="site-footer">
-      <span>LOCAL ARCADE PLAYER · OPEN SOURCE FRONTEND</span>
-      <span>NO ROMS · TWO PLAYERS · LOCAL PLAY</span>
-    </footer>
-
-    <noscript>Bu oynatıcıyı kullanmak için JavaScript'i etkinleştirmen gerekiyor.</noscript>
-    <script src="app.js" defer></script>
+    <noscript>Bu oyunu çalıştırmak için JavaScript'i etkinleştirmen gerekiyor.</noscript>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

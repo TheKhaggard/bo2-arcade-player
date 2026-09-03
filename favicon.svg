@@ -1,5 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="32" fill="#090706"/>
-  <circle cx="32" cy="32" r="27" fill="none" stroke="#e8ae45" stroke-width="2"/>
-  <path d="M21 19h8v26h-8zm14 0h8v26h-8z" fill="#e33422"/>
+  <defs>
+    <radialGradient id="bg"><stop stop-color="#42100a"/><stop offset="1" stop-color="#080403"/></radialGradient>
+    <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#ffe3a0"/><stop offset=".48" stop-color="#b87527"/><stop offset=".55" stop-color="#613313"/><stop offset="1" stop-color="#d29a46"/></linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#bg)" stroke="#9a682e" stroke-width="2"/>
+  <path fill="#9d1b10" d="M5 33 22 22l10-18 10 18 17 11-18-2-9 29-9-29z" opacity=".62"/>
+  <path fill="url(#metal)" d="M20 17h8v30h-8zm16 0h8v30h-8zM17 13h30v6H17zm0 34h30v5H17z"/>
 </svg>

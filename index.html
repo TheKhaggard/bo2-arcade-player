@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Mortal Kombat II (1993) için tarayıcı tabanlı, yerel ROM kullanan iki oyunculu arcade oynatıcı."
+    />
+    <meta name="theme-color" content="#090706" />
+    <title>Mortal Kombat II — Local Arcade Player</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Ana ekrana dön">
+        <span class="brand-mark" aria-hidden="true">II</span>
+        <span>
+          <strong>LOCAL ARCADE</strong>
+          <small>1993 SYSTEM</small>
+        </span>
+      </a>
+
+      <div class="connection-status" aria-label="Bağlı oyun kolları">
+        <span class="status-dot" id="gamepadDot" aria-hidden="true"></span>
+        <span id="gamepadStatus">Oyun kolu bekleniyor</span>
+      </div>
+    </header>
+
+    <main id="launcher">
+      <section class="hero" aria-labelledby="gameTitle">
+        <div class="hero-copy">
+          <p class="eyebrow">MIDWAY · 1993 ARCADE</p>
+          <h1 id="gameTitle">
+            <span>Mortal Kombat</span>
+            <em>II</em>
+          </h1>
+          <p class="lede">
+            Orijinal arcade sürümünü kendi yasal ROM arşivinle, aynı klavyede
+            veya iki oyun koluyla çalıştır.
+          </p>
+
+          <div class="privacy-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2 4 5v6c0 5.2 3.4 9.8 8 11 4.6-1.2 8-5.8 8-11V5l-8-3Zm0 4.2a3 3 0 0 1 3 3v1h.5a.5.5 0 0 1 .5.5v4.8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-4.8a.5.5 0 0 1 .5-.5H9v-1a3 3 0 0 1 3-3Zm0 1.4a1.6 1.6 0 0 0-1.6 1.6v1h3.2v-1A1.6 1.6 0 0 0 12 7.6Z" />
+            </svg>
+            <span>ROM cihazından ayrılmaz ve hiçbir sunucuya yüklenmez.</span>
+          </div>
+        </div>
+
+        <div class="loader-panel">
+          <div class="panel-heading">
+            <span>01</span>
+            <div>
+              <p>ROM ARŞİVİ</p>
+              <h2>Oyunu hazırla</h2>
+            </div>
+          </div>
+
+          <input id="romInput" type="file" accept=".zip,application/zip" hidden />
+          <label class="drop-zone" id="dropZone" for="romInput" tabindex="0">
+            <span class="drop-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v12m0-12L7.5 7.5M12 3l4.5 4.5M5 14v5h14v-5" />
+              </svg>
+            </span>
+            <strong id="romName">mk2.zip dosyasını seç</strong>
+            <span id="romMeta">Buraya sürükleyebilir veya gözatabilirsin</span>
+          </label>
+
+          <div class="validation-status" id="validationStatus" role="status" aria-live="polite">
+            <span class="mini-dot" aria-hidden="true"></span>
+            <span>MAME 2003-Plus uyumlu arşiv bekleniyor</span>
+          </div>
+
+          <button class="primary-button" id="startButton" type="button" disabled>
+            <span>ARCADE'İ BAŞLAT</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 5 7 7-7 7" />
+            </svg>
+          </button>
+
+          <p class="loader-footnote">
+            ROM dahil değildir. Arşivin adı tercihen <code>mk2.zip</code> olmalıdır.
+          </p>
+        </div>
+      </section>
+
+      <section class="controls-section" aria-labelledby="controlsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">2 PLAYER · LOCAL VERSUS</p>
+            <h2 id="controlsTitle">Kontroller</h2>
+          </div>
+          <p>Oyun başladıktan sonra araç çubuğundaki kontrol simgesinden tüm tuşları değiştirebilirsin.</p>
+        </div>
+
+        <div class="control-grid">
+          <article class="control-card player-one">
+            <div class="player-label">
+              <span>P1</span>
+              <div>
+                <small>OYUNCU BİR</small>
+                <strong>Klavye sol taraf</strong>
+              </div>
+            </div>
+
+            <div class="mapping-row">
+              <div class="dpad" aria-label="W A S D yön tuşları">
+                <kbd class="up">W</kbd>
+                <kbd class="left">A</kbd>
+                <kbd class="down">S</kbd>
+                <kbd class="right">D</kbd>
+              </div>
+              <div class="fight-buttons" aria-label="Oyuncu bir saldırı tuşları">
+                <span><kbd>F</kbd><small>HP</small></span>
+                <span><kbd>G</kbd><small>BL</small></span>
+                <span><kbd>H</kbd><small>HK</small></span>
+                <span><kbd>V</kbd><small>LP</small></span>
+                <span class="empty" aria-hidden="true"></span>
+                <span><kbd>N</kbd><small>LK</small></span>
+              </div>
+            </div>
+            <div class="utility-keys"><span><kbd>5</kbd> Jeton</span><span><kbd>1</kbd> Başlat</span></div>
+          </article>
+
+          <article class="control-card player-two">
+            <div class="player-label">
+              <span>P2</span>
+              <div>
+                <small>OYUNCU İKİ</small>
+                <strong>Klavye sağ taraf</strong>
+              </div>
+            </div>
+
+            <div class="mapping-row">
+              <div class="dpad" aria-label="Ok yön tuşları">
+                <kbd class="up">↑</kbd>
+                <kbd class="left">←</kbd>
+                <kbd class="down">↓</kbd>
+                <kbd class="right">→</kbd>
+              </div>
+              <div class="fight-buttons" aria-label="Oyuncu iki saldırı tuşları">
+                <span><kbd>J</kbd><small>HP</small></span>
+                <span><kbd>K</kbd><small>BL</small></span>
+                <span><kbd>L</kbd><small>HK</small></span>
+                <span><kbd>M</kbd><small>LP</small></span>
+                <span class="empty" aria-hidden="true"></span>
+                <span><kbd>.</kbd><small>LK</small></span>
+              </div>
+            </div>
+            <div class="utility-keys"><span><kbd>6</kbd> Jeton</span><span><kbd>2</kbd> Başlat</span></div>
+          </article>
+
+          <article class="control-card gamepad-card">
+            <div class="player-label">
+              <span class="gamepad-symbol" aria-hidden="true">✦</span>
+              <div>
+                <small>TAK · EŞLEŞTİR · DÖVÜŞ</small>
+                <strong>Oyun kolları</strong>
+              </div>
+            </div>
+            <p>
+              Birinci ve ikinci bağlı kol otomatik olarak P1 ve P2 olur. Xbox,
+              PlayStation ve çoğu USB/Bluetooth kol tarayıcı üzerinden desteklenir.
+            </p>
+            <div class="gamepad-slots" aria-live="polite">
+              <span id="padOne"><i></i>P1 — Bağlı değil</span>
+              <span id="padTwo"><i></i>P2 — Bağlı değil</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="legend" aria-label="Kontrol kısaltmaları">
+          <span><b>HP</b> High Punch</span>
+          <span><b>LP</b> Low Punch</span>
+          <span><b>BL</b> Block</span>
+          <span><b>HK</b> High Kick</span>
+          <span><b>LK</b> Low Kick</span>
+        </div>
+      </section>
+
+      <section class="legal-section">
+        <div>
+          <span class="legal-mark" aria-hidden="true">!</span>
+          <p>
+            <strong>Yalnızca sahip olduğun oyun kopyasını kullan.</strong>
+            Bu açık kaynak oynatıcı ROM veya başka telifli oyun verisi içermez.
+          </p>
+        </div>
+        <p>
+          Mortal Kombat II ve ilgili markalar hak sahiplerine aittir. Bu proje
+          Midway, Warner Bros. Discovery veya bağlı şirketlerce desteklenmez.
+        </p>
+      </section>
+    </main>
+
+    <section id="emulatorScreen" class="emulator-screen" hidden aria-label="Arcade emülatörü">
+      <header class="emulator-header">
+        <div>
+          <span class="live-indicator"><i></i> ARCADE LIVE</span>
+          <strong>MORTAL KOMBAT II · 1993</strong>
+        </div>
+        <button id="exitButton" type="button">ROM'U KAPAT</button>
+      </header>
+      <div class="emulator-stage">
+        <div id="game"></div>
+      </div>
+      <p class="emulator-help" id="emulatorHelp" role="status" aria-live="polite">
+        Emülatör hazırlanıyor…
+      </p>
+    </section>
+
+    <footer class="site-footer">
+      <span>LOCAL ARCADE PLAYER · OPEN SOURCE FRONTEND</span>
+      <span>NO ROMS · TWO PLAYERS · LOCAL PLAY</span>
+    </footer>
+
+    <noscript>Bu oynatıcıyı kullanmak için JavaScript'i etkinleştirmen gerekiyor.</noscript>
+    <script src="app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+# Copyrighted game data must never be committed.
+*.zip
+*.7z
+*.rar
+*.chd
+*.rom
+*.bin
+roms/
+saves/
+
+# Local tooling
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/

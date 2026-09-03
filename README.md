@@ -46,31 +46,3 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 | Pause | `P` / `Esc` | `P` / `Esc` | Start |
 
 When **FINISH THEM!** appears, the winning player can press any attack button to perform that fighter's Oathbreaker.
-
-## Run locally
-
-The game uses native ES modules, so serve the project through a small HTTP server:
-
-```bash
-python3 -m http.server 8080
-```
-
-Then open `http://localhost:8080`.
-
-## Development
-
-Run the static checks with:
-
-```bash
-python3 -m unittest discover -s tests -v
-```
-
-Every commit pushed to `main` is tested by GitHub Actions and automatically deployed to GitHub Pages.
-
-## Why this game is original
-
-Commercial fighting-game ROMs, characters, artwork, audio, and other copyrighted assets cannot be redistributed through this repository. Blood Oath II was therefore built from scratch as a copyright-safe tribute to the atmosphere and physical presentation of 1990s arcade fighters.
-
-Its world, names, character designs, code, visual assets, audio, and finisher system are original. This project is not affiliated with Mortal Kombat, Warner Bros., or any other game publisher or rights holder.
-
-The source code is available under the [MIT License](LICENSE). See [Third-Party and Asset Notices](THIRD_PARTY_NOTICES.md) for asset details.

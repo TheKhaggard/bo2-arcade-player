@@ -10,15 +10,16 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 
 ## Features
 
-- Ten original playable fighters with distinct speed, power, and movement profiles
-- Single-player battles against a randomly selected, defensive CPU rival with readable attack recovery
+- Twelve original playable fighters with distinct speed, power, and movement profiles
+- Single-player battles against a randomly selected, adaptive P2 rival with defensive reads and deliberate attack recovery
 - Local two-player versus on one keyboard
 - Two-gamepad support through the browser Gamepad API
-- Four randomly selected arenas: Shattered Moon Temple, Infernal Forge, Moon Gate Monastery, and Venom Marsh
+- A dedicated arena-select screen with Shattered Moon Temple, Infernal Forge, Moon Gate Monastery, Venom Marsh, and a random option
 - Best-of-three rounds, timer, jumping, blocking, four attacks, hit reactions, and knockouts
-- Interactive **Oathbreaker** finishers at the end of the final round
+- Interactive, character-specific animated **Oathbreaker** finishers at the end of the final round
 - Pause and resume from the fight screen, cabinet controls, keyboard, or gamepad
-- Original synthesized arcade sound effects through the Web Audio API
+- Original stage-specific match music, ambience, and arcade sound effects synthesized through the Web Audio API
+- Runtime sprite isolation that keeps every attack frame inside its own atlas cell and removes detached fragments
 - Fullscreen support and a responsive physical arcade-cabinet presentation
 - Pure HTML, CSS, and JavaScript with no runtime dependencies
 
@@ -32,10 +33,12 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 | Neris | The Frostbound Nomad | White Silence |
 | Vance | The Gilded Champion | Final Curtain |
 | Orun | The Storm Oracle | Heaven's Break |
-| Serika | The Blood-Moon Fang | Blood Moon |
+| Serika | The Blood-Moon Fang | Violet Maw |
 | Ilyra | The Fallen Sky Heir | Last Breath |
 | Dravok | The Dethroned Tyrant | Tyrant's Eclipse |
 | Sythra | The Venom Marsh Hunter | Venom Bloom |
+| Gorrak | The Ash-Waste Hunter | Obsidian Shear |
+| Mara Voss | The Frontier Commando | Breach Protocol |
 
 ## Controls
 

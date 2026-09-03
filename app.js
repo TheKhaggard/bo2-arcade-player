@@ -9,17 +9,21 @@ const elements = {
   loadingProgress: document.querySelector("#loadingProgress"),
   titleOverlay: document.querySelector("#titleOverlay"),
   selectOverlay: document.querySelector("#selectOverlay"),
+  stageOverlay: document.querySelector("#stageOverlay"),
   resultOverlay: document.querySelector("#resultOverlay"),
   selectionEyebrow: document.querySelector("#selectionEyebrow"),
   selectionStatus: document.querySelector("#selectionStatus"),
   playerOneChoice: document.querySelector("#playerOneChoice"),
   playerTwoChoice: document.querySelector("#playerTwoChoice"),
   playerTwoLabel: document.querySelector("#playerTwoLabel"),
-  stageChoice: document.querySelector("#stageChoice"),
+  stagePlayerOne: document.querySelector("#stagePlayerOne"),
+  stagePlayerTwo: document.querySelector("#stagePlayerTwo"),
+  stageButtons: [...document.querySelectorAll("[data-stage]")],
   fighterCards: [...document.querySelectorAll("[data-character]")],
   modeButtons: [...document.querySelectorAll("[data-mode]")],
   fightButton: document.querySelector("#fightButton"),
   backButton: document.querySelector("#backButton"),
+  stageBackButton: document.querySelector("#stageBackButton"),
   rematchButton: document.querySelector("#rematchButton"),
   menuButton: document.querySelector("#menuButton"),
   winnerName: document.querySelector("#winnerName"),
@@ -40,7 +44,7 @@ let selectedMode = "solo";
 let selections = { playerOne: null, playerTwo: null };
 const characterIds = Object.keys(CHARACTERS);
 const stageIds = Object.keys(STAGES);
-let selectedStage = stageIds[0];
+let selectedStage = null;
 
 function randomOpponent(excludedCharacter) {
   const candidates = characterIds.filter((character) => character !== excludedCharacter);
@@ -52,7 +56,7 @@ function randomStage() {
 }
 
 function showOverlay(target) {
-  [elements.loadingOverlay, elements.titleOverlay, elements.selectOverlay, elements.resultOverlay]
+  [elements.loadingOverlay, elements.titleOverlay, elements.selectOverlay, elements.stageOverlay, elements.resultOverlay]
     .forEach((overlay) => { overlay.hidden = overlay !== target; });
 }
 
@@ -65,8 +69,7 @@ function updateRoster() {
 
   elements.playerOneChoice.textContent = selections.playerOne ? CHARACTERS[selections.playerOne].name : "—";
   elements.playerTwoChoice.textContent = selections.playerTwo ? CHARACTERS[selections.playerTwo].name : (selectedMode === "solo" ? "RANDOM" : "—");
-  elements.playerTwoLabel.textContent = selectedMode === "solo" ? "CPU" : "P2";
-  elements.stageChoice.textContent = STAGES[selectedStage].name;
+  elements.playerTwoLabel.textContent = "P2";
 
   if (!selections.playerOne) {
     elements.selectionEyebrow.textContent = "PLAYER ONE";
@@ -76,7 +79,7 @@ function updateRoster() {
     elements.selectionStatus.textContent = "Choose the opposing warrior";
   } else if (selectedMode === "solo") {
     elements.selectionEyebrow.textContent = "SINGLE PLAYER";
-    elements.selectionStatus.textContent = `CPU rival drawn: ${CHARACTERS[selections.playerTwo].name}`;
+    elements.selectionStatus.textContent = `P2 rival drawn: ${CHARACTERS[selections.playerTwo].name}`;
   } else {
     elements.selectionEyebrow.textContent = "VERSUS";
     elements.selectionStatus.textContent = "Both warriors are ready";
@@ -87,8 +90,6 @@ function updateRoster() {
 function openCharacterSelect(mode) {
   selectedMode = mode;
   selections = { playerOne: null, playerTwo: null };
-  selectedStage = randomStage();
-  elements.selectOverlay.classList.toggle("solo-selection", mode === "solo");
   updateRoster();
   showOverlay(elements.selectOverlay);
 }
@@ -111,9 +112,18 @@ function chooseCharacter(character) {
   updateRoster();
 }
 
-function startFight() {
+function openStageSelect() {
   if (!selections.playerOne || !selections.playerTwo) return;
+  elements.stagePlayerOne.textContent = CHARACTERS[selections.playerOne].name;
+  elements.stagePlayerTwo.textContent = CHARACTERS[selections.playerTwo].name;
+  showOverlay(elements.stageOverlay);
+}
+
+function startFight(stageChoice) {
+  if (!selections.playerOne || !selections.playerTwo) return;
+  selectedStage = stageChoice === "random" ? randomStage() : stageChoice;
   showOverlay(null);
+  void audio.startMusic(selectedStage);
   game.startMatch({
     mode: selectedMode,
     playerOne: selections.playerOne,
@@ -123,12 +133,14 @@ function startFight() {
 }
 
 function returnToMenu() {
+  audio.stopMusic();
   game.showAttract();
   showOverlay(elements.titleOverlay);
 }
 
 const game = new ArenaGame(elements.canvas, input, audio, {
   onPauseChange: (paused, available) => {
+    audio.setMusicPaused(paused);
     elements.pauseButton.disabled = !available;
     elements.pauseButton.setAttribute("aria-pressed", String(paused));
     elements.pauseButton.innerHTML = `<i class="green-lamp"></i> ${paused ? "RESUME" : "PAUSE"}`;
@@ -137,6 +149,7 @@ const game = new ArenaGame(elements.canvas, input, audio, {
     elements.matchPauseButton.innerHTML = `<span aria-hidden="true">${paused ? "▶" : "Ⅱ"}</span> ${paused ? "RESUME" : "PAUSE"}`;
   },
   onMatchEnd: ({ winner, score, finisher }) => {
+    audio.stopMusic();
     elements.winnerName.textContent = `${winner.name} WINS`;
     elements.winnerSubtitle.textContent = finisher
       ? `${winner.finisher} · OATHBREAKER · ${score}`
@@ -152,20 +165,16 @@ elements.modeButtons.forEach((button) => {
   });
 });
 elements.fighterCards.forEach((card) => card.addEventListener("click", () => chooseCharacter(card.dataset.character)));
-elements.fightButton.addEventListener("click", startFight);
+elements.fightButton.addEventListener("click", openStageSelect);
 elements.backButton.addEventListener("click", returnToMenu);
+elements.stageBackButton.addEventListener("click", () => showOverlay(elements.selectOverlay));
+elements.stageButtons.forEach((button) => button.addEventListener("click", () => startFight(button.dataset.stage)));
 elements.menuButton.addEventListener("click", returnToMenu);
 elements.rematchButton.addEventListener("click", () => {
   void audio.unlock();
-  showOverlay(null);
+  audio.stopMusic();
   if (selectedMode === "solo") selections.playerTwo = randomOpponent(selections.playerOne);
-  selectedStage = randomStage();
-  game.startMatch({
-    mode: selectedMode,
-    playerOne: selections.playerOne,
-    playerTwo: selections.playerTwo,
-    stage: selectedStage,
-  });
+  openStageSelect();
 });
 
 elements.soundButton.addEventListener("click", () => {

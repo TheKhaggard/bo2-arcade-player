@@ -9,6 +9,11 @@ function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
 }
 
+function smoothstep(value) {
+  const bounded = clamp(value, 0, 1);
+  return bounded * bounded * (3 - 2 * bounded);
+}
+
 function loadImage(source) {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -16,6 +21,92 @@ function loadImage(source) {
     image.addEventListener("error", () => reject(new Error(`Unable to load image: ${source}`)), { once: true });
     image.src = source;
   });
+}
+
+function isolateSpriteAtlas(image) {
+  const columns = 4;
+  const rows = 2;
+  const frameWidth = Math.floor(image.width / columns);
+  const frameHeight = Math.floor(image.height / rows);
+  const frames = [];
+  let removedFragments = 0;
+
+  for (let frame = 0; frame < columns * rows; frame += 1) {
+    const canvas = document.createElement("canvas");
+    canvas.width = frameWidth;
+    canvas.height = frameHeight;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(
+      image,
+      (frame % columns) * frameWidth,
+      Math.floor(frame / columns) * frameHeight,
+      frameWidth,
+      frameHeight,
+      0,
+      0,
+      frameWidth,
+      frameHeight,
+    );
+
+    const pixels = context.getImageData(0, 0, frameWidth, frameHeight);
+    const labels = new Int32Array(frameWidth * frameHeight);
+    const queue = new Int32Array(frameWidth * frameHeight);
+    const components = [];
+    let nextLabel = 0;
+
+    for (let start = 0; start < labels.length; start += 1) {
+      if (labels[start] || pixels.data[start * 4 + 3] < 6) continue;
+      nextLabel += 1;
+      let head = 0;
+      let tail = 1;
+      let count = 0;
+      queue[0] = start;
+      labels[start] = nextLabel;
+
+      while (head < tail) {
+        const current = queue[head];
+        head += 1;
+        count += 1;
+        const x = current % frameWidth;
+        const y = Math.floor(current / frameWidth);
+        for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+          const neighborY = y + offsetY;
+          if (neighborY < 0 || neighborY >= frameHeight) continue;
+          for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+            if (offsetX === 0 && offsetY === 0) continue;
+            const neighborX = x + offsetX;
+            if (neighborX < 0 || neighborX >= frameWidth) continue;
+            const neighbor = neighborY * frameWidth + neighborX;
+            if (labels[neighbor] || pixels.data[neighbor * 4 + 3] < 6) continue;
+            labels[neighbor] = nextLabel;
+            queue[tail] = neighbor;
+            tail += 1;
+          }
+        }
+      }
+      components.push({ label: nextLabel, count });
+    }
+
+    if (components.length > 1) {
+      const main = components.reduce((largest, component) => (
+        component.count > largest.count ? component : largest
+      ));
+      removedFragments += components.length - 1;
+      for (let pixel = 0; pixel < labels.length; pixel += 1) {
+        if (labels[pixel] === main.label) continue;
+        const channel = pixel * 4;
+        pixels.data[channel] = 0;
+        pixels.data[channel + 1] = 0;
+        pixels.data[channel + 2] = 0;
+        pixels.data[channel + 3] = 0;
+      }
+      context.clearRect(0, 0, frameWidth, frameHeight);
+      context.putImageData(pixels, 0, 0);
+    }
+    frames.push(canvas);
+  }
+
+  return { frames, width: frameWidth, height: frameHeight, removedFragments };
 }
 
 function emptyCommand() {
@@ -277,6 +368,7 @@ export class ArenaGame {
     this.onMatchEnd = onMatchEnd ?? (() => {});
     this.onPauseChange = onPauseChange ?? (() => {});
     this.images = {};
+    this.cleanedFragments = 0;
     this.stage = STAGES.moonTemple;
     this.fighters = [];
     this.ai = new AIController();
@@ -291,6 +383,9 @@ export class ArenaGame {
     this.hitStop = 0;
     this.shake = 0;
     this.finisherUsed = false;
+    this.finisherDuration = 3.8;
+    this.finisherElapsed = 0;
+    this.finisherImpactTriggered = false;
     this.autoFinishTimer = 0;
     this.particles = [];
     this.ash = Array.from({ length: 46 }, (_, index) => ({
@@ -310,7 +405,14 @@ export class ArenaGame {
     ];
     let loaded = 0;
     await Promise.all(sources.map(async ([key, source]) => {
-      this.images[key] = await loadImage(source);
+      const image = await loadImage(source);
+      if (CHARACTERS[key]) {
+        const atlas = isolateSpriteAtlas(image);
+        this.images[key] = atlas;
+        this.cleanedFragments += atlas.removedFragments;
+      } else {
+        this.images[key] = image;
+      }
       loaded += 1;
       onProgress(loaded / sources.length);
     }));
@@ -356,6 +458,8 @@ export class ArenaGame {
     this.fighters[0].facing = 1;
     this.fighters[1].facing = -1;
     this.roundTimer = ROUND.seconds;
+    this.finisherElapsed = 0;
+    this.finisherImpactTriggered = false;
     this.phase = "intro";
     this.phaseTimer = ROUND.introSeconds;
     this.particles.length = 0;
@@ -446,6 +550,13 @@ export class ArenaGame {
 
     if (this.phase === "finisher") {
       this.phaseTimer -= dt;
+      this.finisherElapsed += dt;
+      if (!this.finisherImpactTriggered && this.finisherElapsed >= 0.68) {
+        this.finisherImpactTriggered = true;
+        this.shake = 18;
+        const loser = this.roundWinner === this.fighters[0] ? this.fighters[1] : this.fighters[0];
+        this.spawnFinisherBurst(loser, this.roundWinner.character.accent);
+      }
       this.fighters.forEach((fighter) => fighter.update(dt, emptyCommand(), false));
       if (this.phaseTimer <= 0) this.completeMatch(true);
       return;
@@ -556,16 +667,15 @@ export class ArenaGame {
     const loser = this.roundWinner === this.fighters[0] ? this.fighters[1] : this.fighters[0];
     this.finisherUsed = true;
     this.phase = "finisher";
-    this.phaseTimer = 3.25;
+    this.phaseTimer = this.finisherDuration;
+    this.finisherElapsed = 0;
+    this.finisherImpactTriggered = false;
     this.roundWinner.victory = true;
     loser.ko = true;
     loser.health = 0;
     loser.flashTimer = 0.35;
-    this.shake = 18;
+    this.shake = 5;
     this.hitStop = 0.12;
-    for (let burst = 0; burst < 4; burst += 1) {
-      this.spawnHit(loser.x + (Math.random() - 0.5) * 80, loser.y - 60 - Math.random() * 170, false);
-    }
     this.audio.play("finisher");
   }
 
@@ -608,6 +718,24 @@ export class ArenaGame {
     }
   }
 
+  spawnFinisherBurst(fighter, accent) {
+    const colors = [accent, "#fff0b5", "#ffffff", "#251024"];
+    for (let index = 0; index < 58; index += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 95 + Math.random() * 390;
+      this.particles.push({
+        x: fighter.x + (Math.random() - 0.5) * 44,
+        y: fighter.y - 132 + (Math.random() - 0.5) * 78,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 80,
+        life: 0.5 + Math.random() * 0.65,
+        maxLife: 1.15,
+        size: 2 + Math.random() * 7,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+  }
+
   updateParticles(dt) {
     for (const particle of this.particles) {
       particle.life -= dt;
@@ -634,8 +762,16 @@ export class ArenaGame {
     this.canvas.dataset.gameState = this.state;
     this.canvas.dataset.gamePhase = this.phase;
     this.canvas.dataset.roundTime = this.roundTimer.toFixed(2);
+    this.canvas.dataset.round = String(this.roundNumber);
     this.canvas.dataset.stage = this.stage?.id ?? "moonTemple";
     this.canvas.dataset.stageName = this.stage?.name ?? STAGES.moonTemple.name;
+    this.canvas.dataset.cleanedFragments = String(this.cleanedFragments);
+    this.canvas.dataset.finisherStyle = this.roundWinner?.character.finisherStyle ?? "none";
+    this.canvas.dataset.finisherElapsed = this.finisherElapsed.toFixed(2);
+    this.canvas.dataset.p1Health = this.fighters[0]?.health.toFixed(1) ?? "0";
+    this.canvas.dataset.p2Health = this.fighters[1]?.health.toFixed(1) ?? "0";
+    this.canvas.dataset.p1Wins = String(this.fighters[0]?.wins ?? 0);
+    this.canvas.dataset.p2Wins = String(this.fighters[1]?.wins ?? 0);
     context.save();
     if (this.shake > 0) context.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
     this.drawArena(time);
@@ -681,39 +817,102 @@ export class ArenaGame {
 
   drawFighter(fighter) {
     const context = this.context;
-    const frame = fighter.spriteFrame();
-    const sourceWidth = fighter.image.width / 4;
-    const sourceHeight = fighter.image.height / 2;
-    const sourceX = (frame % 4) * sourceWidth;
-    const sourceY = Math.floor(frame / 4) * sourceHeight;
+    const presentation = this.finisherPresentation(fighter);
+    const frame = presentation.frame ?? fighter.spriteFrame();
+    const frameImage = fighter.image.frames[frame] ?? fighter.image.frames[0];
     const width = 230 * fighter.character.scale;
     const height = 307 * fighter.character.scale;
 
     context.save();
-    context.globalAlpha = 0.38;
+    context.globalAlpha = 0.38 * presentation.alpha;
     context.fillStyle = "#000";
     context.beginPath();
-    context.ellipse(fighter.x, VIEWPORT.floorY + 2, 58, 13, 0, 0, Math.PI * 2);
+    context.ellipse(
+      fighter.x + presentation.x,
+      VIEWPORT.floorY + 2,
+      58 * presentation.scaleX,
+      13 * presentation.scaleY,
+      0,
+      0,
+      Math.PI * 2,
+    );
     context.fill();
     context.restore();
 
     context.save();
-    context.translate(Math.round(fighter.x), Math.round(fighter.y));
-    context.scale(fighter.facing, 1);
-    context.imageSmoothingEnabled = true;
+    context.globalAlpha = presentation.alpha;
+    context.translate(Math.round(fighter.x + presentation.x), Math.round(fighter.y + presentation.y));
+    context.rotate(presentation.rotation);
+    context.scale(fighter.facing * presentation.scaleX, presentation.scaleY);
+    context.imageSmoothingEnabled = false;
     if (fighter.flashTimer > 0) context.filter = "brightness(1.8) saturate(0.4)";
     context.drawImage(
-      fighter.image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
+      frameImage,
       -width / 2,
       -height,
       width,
       height,
     );
     context.restore();
+  }
+
+  finisherPresentation(fighter) {
+    const presentation = {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      alpha: 1,
+      frame: null,
+    };
+    if (this.phase !== "finisher" || !this.roundWinner) return presentation;
+
+    const elapsed = this.finisherElapsed;
+    const winner = this.roundWinner;
+    const loser = winner === this.fighters[0] ? this.fighters[1] : this.fighters[0];
+    const direction = Math.sign(loser.x - winner.x) || winner.facing;
+    const impactTime = 0.68;
+
+    if (fighter === winner) {
+      const closingDistance = Math.max(0, Math.min(210, Math.abs(loser.x - winner.x) - 104));
+      const approach = smoothstep(elapsed / 0.52);
+      const recoil = smoothstep((elapsed - 0.95) / 0.65);
+      presentation.x = direction * closingDistance * (approach - recoil * 0.28);
+      presentation.y = elapsed < impactTime ? -Math.sin(approach * Math.PI) * 18 : 0;
+      presentation.scaleX = 1 + (elapsed < impactTime ? Math.sin(approach * Math.PI) * 0.08 : 0);
+      presentation.rotation = direction * (elapsed < impactTime ? -0.055 * approach : 0.025 * (1 - recoil));
+      presentation.frame = elapsed < 0.9 ? 3 : (elapsed < 1.65 ? 4 : 7);
+      return presentation;
+    }
+
+    if (fighter === loser && elapsed >= impactTime) {
+      const reaction = smoothstep((elapsed - impactTime) / 0.48);
+      const settle = smoothstep((elapsed - 1.7) / 1.1);
+      const style = winner.character.finisherStyle;
+      presentation.frame = 6;
+      presentation.x = direction * (34 * reaction - 12 * settle);
+      presentation.rotation = direction * 0.14 * reaction * (1 - settle * 0.45);
+
+      if (["tempest", "thunder", "sky"].includes(style)) {
+        presentation.y = -58 * Math.sin(Math.min(1, (elapsed - impactTime) / 1.25) * Math.PI);
+        presentation.rotation += Math.sin(elapsed * 24) * 0.035;
+      } else if (style === "frost") {
+        presentation.scaleX = 1 - reaction * 0.08;
+        presentation.scaleY = 1 + reaction * 0.06;
+      } else if (style === "quake") {
+        presentation.y = -24 * Math.abs(Math.sin((elapsed - impactTime) * 11)) * (1 - settle);
+        presentation.rotation += Math.sin(elapsed * 18) * 0.045;
+      } else if (["flash", "barrage"].includes(style)) {
+        presentation.x += Math.sin(elapsed * 31) * 11 * (1 - settle);
+      } else if (["fang", "spurs"].includes(style)) {
+        presentation.rotation += direction * 0.13 * Math.sin((elapsed - impactTime) * 8) * (1 - settle);
+      } else {
+        presentation.y = -12 * Math.sin((elapsed - impactTime) * 8) * (1 - settle);
+        presentation.alpha = 1 - Math.max(0, settle - 0.7) * 0.5;
+      }
+    }
+    return presentation;
   }
 
   drawParticles() {
@@ -728,23 +927,173 @@ export class ArenaGame {
 
   drawFinisherEffect(time) {
     const context = this.context;
+    const winner = this.roundWinner;
+    if (!winner) return;
     const loser = this.roundWinner === this.fighters[0] ? this.fighters[1] : this.fighters[0];
+    const elapsed = this.finisherElapsed;
+    const impact = clamp((elapsed - 0.55) / 0.4, 0, 1);
+    if (impact <= 0) return;
+    const decay = 1 - smoothstep((elapsed - 2.75) / 0.9);
+    const intensity = impact * decay;
     const pulse = 0.5 + Math.sin(time * 18) * 0.5;
-    const aura = context.createRadialGradient(loser.x, loser.y - 140, 20, loser.x, loser.y - 140, 260);
-    aura.addColorStop(0, `${this.roundWinner.character.accent}88`);
-    aura.addColorStop(0.42, `${this.roundWinner.character.accent}22`);
+    const accent = winner.character.accent;
+    const style = winner.character.finisherStyle;
+    const centerX = loser.x;
+    const centerY = loser.y - 140;
+    const aura = context.createRadialGradient(centerX, centerY, 20, centerX, centerY, 260);
+    aura.addColorStop(0, `${accent}88`);
+    aura.addColorStop(0.42, `${accent}22`);
     aura.addColorStop(1, "rgba(0, 0, 0, 0)");
     context.save();
     context.globalCompositeOperation = "screen";
-    context.globalAlpha = 0.42 + pulse * 0.2;
+    context.globalAlpha = intensity * (0.42 + pulse * 0.2);
     context.fillStyle = aura;
     context.fillRect(0, 0, VIEWPORT.width, VIEWPORT.height);
-    context.strokeStyle = this.roundWinner.character.accent;
-    context.lineWidth = 3;
-    for (let ring = 0; ring < 3; ring += 1) {
-      context.globalAlpha = 0.18 + pulse * 0.16;
+    context.strokeStyle = accent;
+    context.fillStyle = accent;
+    context.lineCap = "square";
+    context.lineJoin = "miter";
+
+    if (["tempest", "thunder", "sky"].includes(style)) {
+      const boltCount = style === "thunder" ? 5 : (style === "sky" ? 3 : 4);
+      for (let bolt = 0; bolt < boltCount; bolt += 1) {
+        const topX = centerX + (bolt - (boltCount - 1) / 2) * 52;
+        this.drawLightning(topX, 20, centerX + (bolt % 2 ? 28 : -28), centerY + 96, time * 17 + bolt, accent, intensity);
+      }
+      if (style === "tempest") this.drawWindSpiral(centerX, centerY, time, accent, intensity);
+      if (style === "sky") this.drawStarfall(centerX, centerY, time, accent, intensity);
+    } else if (style === "ember") {
+      for (let flame = 0; flame < 9; flame += 1) {
+        const rise = (elapsed * 155 + flame * 43) % 260;
+        const x = centerX + Math.sin(time * 5 + flame) * (30 + flame * 5);
+        context.globalAlpha = intensity * (0.35 + (flame % 3) * 0.18);
+        context.fillRect(Math.round(x), Math.round(loser.y - 22 - rise), 7 + (flame % 2) * 4, 18 + (flame % 3) * 8);
+      }
+    } else if (style === "frost") {
+      context.globalAlpha = intensity * 0.82;
+      context.lineWidth = 4;
+      for (let shard = 0; shard < 8; shard += 1) {
+        const angle = (Math.PI * 2 * shard) / 8 + time * 0.22;
+        const inner = 38;
+        const outer = 105 + (shard % 3) * 25;
+        context.beginPath();
+        context.moveTo(centerX + Math.cos(angle) * inner, centerY + Math.sin(angle) * inner);
+        context.lineTo(centerX + Math.cos(angle) * outer, centerY + Math.sin(angle) * outer);
+        context.stroke();
+      }
+      context.strokeRect(centerX - 57, centerY - 112, 114, 230);
+    } else if (["flash", "barrage"].includes(style)) {
+      const lines = style === "barrage" ? 14 : 9;
+      context.lineWidth = style === "barrage" ? 4 : 7;
+      for (let line = 0; line < lines; line += 1) {
+        const y = centerY - 120 + ((line * 31 + elapsed * 260) % 250);
+        const fromLeft = line % 2 === 0;
+        context.globalAlpha = intensity * (0.28 + (line % 4) * 0.12);
+        context.beginPath();
+        context.moveTo(centerX + (fromLeft ? -210 : 210), y);
+        context.lineTo(centerX + (fromLeft ? -48 : 48), y + (line % 3 - 1) * 18);
+        context.stroke();
+      }
+    } else if (["fang", "spurs"].includes(style)) {
+      const slashCount = style === "spurs" ? 6 : 4;
+      context.lineWidth = style === "spurs" ? 8 : 5;
+      for (let slash = 0; slash < slashCount; slash += 1) {
+        const offset = (slash - (slashCount - 1) / 2) * 34;
+        context.globalAlpha = intensity * (0.38 + (slash % 2) * 0.34);
+        context.beginPath();
+        context.moveTo(centerX - 120, centerY - 112 + offset);
+        context.quadraticCurveTo(centerX, centerY - offset * 0.35, centerX + 120, centerY + 106 + offset);
+        context.stroke();
+      }
+      if (style === "fang") {
+        context.globalAlpha = intensity * 0.7;
+        context.beginPath();
+        context.moveTo(centerX - 70, centerY - 14);
+        context.lineTo(centerX - 18, centerY - 70);
+        context.lineTo(centerX, centerY - 18);
+        context.lineTo(centerX + 18, centerY - 70);
+        context.lineTo(centerX + 70, centerY - 14);
+        context.lineTo(centerX + 18, centerY + 42);
+        context.lineTo(centerX, centerY - 4);
+        context.lineTo(centerX - 18, centerY + 42);
+        context.closePath();
+        context.stroke();
+      }
+    } else if (style === "quake") {
+      context.lineWidth = 5;
+      for (let ring = 0; ring < 5; ring += 1) {
+        context.globalAlpha = intensity * (0.58 - ring * 0.075);
+        context.beginPath();
+        context.ellipse(centerX, VIEWPORT.floorY + 2, 55 + ring * 48 + pulse * 8, 10 + ring * 9, 0, 0, Math.PI * 2);
+        context.stroke();
+      }
+    } else {
+      this.drawWindSpiral(centerX, centerY, time, accent, intensity);
+      for (let ring = 0; ring < (style === "venom" ? 5 : 3); ring += 1) {
+        context.globalAlpha = intensity * (0.18 + pulse * 0.16);
+        context.beginPath();
+        context.arc(centerX, centerY, 55 + ring * 35 + pulse * 9, 0, Math.PI * 2);
+        context.stroke();
+      }
+    }
+    context.restore();
+  }
+
+  drawLightning(startX, startY, endX, endY, seed, color, alpha) {
+    const context = this.context;
+    const segments = 9;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = 4;
+    context.globalAlpha = alpha * 0.82;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    for (let index = 1; index < segments; index += 1) {
+      const progress = index / segments;
+      const jitter = Math.sin(seed * 3.17 + index * 8.41) * 24;
+      context.lineTo(startX + (endX - startX) * progress + jitter, startY + (endY - startY) * progress);
+    }
+    context.lineTo(endX, endY);
+    context.stroke();
+    context.globalAlpha = alpha * 0.36;
+    context.lineWidth = 11;
+    context.stroke();
+    context.restore();
+  }
+
+  drawWindSpiral(centerX, centerY, time, color, alpha) {
+    const context = this.context;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = 4;
+    for (let spiral = 0; spiral < 3; spiral += 1) {
+      context.globalAlpha = alpha * (0.27 + spiral * 0.13);
       context.beginPath();
-      context.arc(loser.x, loser.y - 140, 55 + ring * 42 + pulse * 9, 0, Math.PI * 2);
+      for (let point = 0; point <= 34; point += 1) {
+        const radius = 12 + point * 4.4;
+        const angle = point * 0.38 + time * (1.8 + spiral * 0.25) + spiral * 2.1;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius * 0.56;
+        if (point === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+      }
+      context.stroke();
+    }
+    context.restore();
+  }
+
+  drawStarfall(centerX, centerY, time, color, alpha) {
+    const context = this.context;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = 3;
+    for (let star = 0; star < 8; star += 1) {
+      const x = centerX - 170 + ((star * 67 + time * 90) % 340);
+      const y = centerY - 230 + ((star * 53 + time * 130) % 300);
+      context.globalAlpha = alpha * (0.32 + (star % 3) * 0.18);
+      context.beginPath();
+      context.moveTo(x - 18, y - 28);
+      context.lineTo(x + 6, y + 8);
       context.stroke();
     }
     context.restore();
@@ -825,7 +1174,9 @@ export class ArenaGame {
     } else if (this.phase === "finishPrompt") {
       this.drawCenterText("FINISH THEM!", "PRESS ANY ATTACK · OATHBREAKER READY", "#f0c33b");
     } else if (this.phase === "finisher") {
-      this.drawCenterText(this.roundWinner.character.finisher, "OATHBREAKER", this.roundWinner.character.accent);
+      if (this.finisherElapsed > 2.35) {
+        this.drawCenterText(this.roundWinner.character.finisher, "OATHBREAKER", this.roundWinner.character.accent);
+      }
     }
   }
 

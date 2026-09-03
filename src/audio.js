@@ -5,6 +5,11 @@ export class AudioEngine {
     this.enabled = true;
     this.ambienceTimer = null;
     this.beat = 0;
+    this.musicTimer = null;
+    this.musicActive = false;
+    this.musicPaused = false;
+    this.musicStep = 0;
+    this.musicStage = "moonTemple";
   }
 
   async unlock() {
@@ -30,6 +35,59 @@ export class AudioEngine {
   toggle() {
     this.setEnabled(!this.enabled);
     return this.enabled;
+  }
+
+  async startMusic(stage = "moonTemple") {
+    await this.unlock();
+    this.stopMusic();
+    if (!this.context) return;
+    this.musicStage = stage;
+    this.musicActive = true;
+    this.musicPaused = false;
+    this.musicStep = 0;
+    this.musicPulse();
+    this.musicTimer = window.setInterval(() => this.musicPulse(), 240);
+  }
+
+  stopMusic() {
+    if (this.musicTimer) window.clearInterval(this.musicTimer);
+    this.musicTimer = null;
+    this.musicActive = false;
+    this.musicPaused = false;
+    this.musicStep = 0;
+  }
+
+  setMusicPaused(paused) {
+    this.musicPaused = Boolean(paused);
+  }
+
+  musicPulse() {
+    if (!this.musicActive || this.musicPaused) return;
+    const patterns = {
+      moonTemple: [55, 0, 55, 65.41, 49, 0, 61.74, 55],
+      infernalForge: [49, 49, 0, 51.91, 46.25, 46.25, 0, 55],
+      moonGate: [65.41, 0, 82.41, 73.42, 61.74, 0, 73.42, 55],
+      venomMarsh: [46.25, 0, 51.91, 46.25, 43.65, 0, 49, 41.2],
+    };
+    const pattern = patterns[this.musicStage] ?? patterns.moonTemple;
+    const step = this.musicStep;
+    const frequency = pattern[step % pattern.length];
+    if (frequency) {
+      this.tone({ frequency, endFrequency: frequency * 0.96, duration: 0.21, gain: 0.042, type: "sawtooth" });
+      if (step % 4 === 2) {
+        this.tone({ frequency: frequency * 2, endFrequency: frequency * 1.92, duration: 0.12, gain: 0.018, type: "square" });
+      }
+    }
+    if (step % 4 === 0) {
+      this.noise(0.055, 0.035);
+      this.tone({ frequency: 72, endFrequency: 38, duration: 0.12, gain: 0.052, type: "sine" });
+    } else if (step % 4 === 2) {
+      this.noise(0.025, 0.018);
+    }
+    if (step % 8 === 7) {
+      this.tone({ frequency: frequency ? frequency * 3 : 146.84, endFrequency: 82.41, duration: 0.3, gain: 0.018, type: "triangle" });
+    }
+    this.musicStep += 1;
   }
 
   tone({ frequency = 120, endFrequency = frequency, duration = 0.12, gain = 0.12, type = "square", delay = 0 }) {
@@ -98,7 +156,7 @@ export class AudioEngine {
   startAmbience() {
     if (this.ambienceTimer || !this.context) return;
     this.ambienceTimer = window.setInterval(() => {
-      if (!this.enabled) return;
+      if (!this.enabled || this.musicActive) return;
       const pattern = [55, 55, 65.4, 49];
       const frequency = pattern[this.beat % pattern.length];
       this.tone({ frequency, endFrequency: frequency * 0.88, duration: 0.7, gain: 0.025, type: "sawtooth" });

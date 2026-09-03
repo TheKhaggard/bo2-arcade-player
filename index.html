@@ -20,7 +20,7 @@
       <header class="marquee">
         <div class="marquee-rivets" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <p class="marquee-kicker">THE ETERNAL TOURNAMENT</p>
-        <h1>BLOOD OATH <strong>II</strong></h1>
+        <h1 class="marquee-logo-title"><img src="assets/logo-blood-oath-ii.png" alt="Blood Oath II" /></h1>
         <p class="marquee-subtitle">WARRIORS OF THE SHATTERED MOON</p>
       </header>
 
@@ -46,12 +46,12 @@
               <span class="crest-blade right"></span>
             </div>
             <p class="tournament-line">THE ETERNAL TOURNAMENT PRESENTS</p>
-            <h2>BLOOD OATH <em>II</em></h2>
+            <h2 class="title-logo-title"><img src="assets/logo-blood-oath-ii.png" alt="Blood Oath II" /></h2>
             <p class="title-tagline">ONLY ONE OATH SURVIVES THE NIGHT</p>
             <div class="arcade-menu">
               <button class="arcade-button primary" type="button" data-mode="solo">
                 <span class="button-number">1</span>
-                <span><b>SINGLE PLAYER</b><small>Face an adaptive CPU rival</small></span>
+                <span><b>SINGLE PLAYER</b><small>Face an adaptive P2 rival</small></span>
               </button>
               <button class="arcade-button" type="button" data-mode="versus">
                 <span class="button-number">2</span>
@@ -99,20 +99,56 @@
               <button class="fighter-card" type="button" data-character="sythra" aria-label="Select Sythra">
                 <span class="fighter-portrait sythra" aria-hidden="true"></span><span class="fighter-name">SYTHRA</span>
               </button>
+              <button class="fighter-card" type="button" data-character="gorrak" aria-label="Select Gorrak">
+                <span class="fighter-portrait gorrak" aria-hidden="true"></span><span class="fighter-name">GORRAK</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="mara" aria-label="Select Mara Voss">
+                <span class="fighter-portrait mara" aria-hidden="true"></span><span class="fighter-name">MARA VOSS</span>
+              </button>
             </div>
 
             <div class="selection-strip" aria-live="polite">
               <span><small>P1</small><b id="playerOneChoice">—</b></span>
               <strong>VS</strong>
-              <span><small id="playerTwoLabel">CPU</small><b id="playerTwoChoice">RANDOM</b></span>
+              <span><small id="playerTwoLabel">P2</small><b id="playerTwoChoice">RANDOM</b></span>
             </div>
-
-            <p class="stage-draw">RANDOM ARENA <b id="stageChoice">SHATTERED MOON TEMPLE</b></p>
 
             <div class="select-actions">
               <button class="text-button" id="backButton" type="button">← MAIN MENU</button>
-              <button class="fight-button" id="fightButton" type="button" disabled>ENTER THE ARENA</button>
+              <button class="fight-button" id="fightButton" type="button" disabled>CHOOSE ARENA →</button>
             </div>
+          </section>
+
+          <section class="game-overlay stage-overlay" id="stageOverlay" hidden>
+            <header class="stage-heading">
+              <p>THE OATH DEMANDS A GROUND</p>
+              <h2>CHOOSE YOUR ARENA</h2>
+              <span>Select a battleground or surrender it to fate</span>
+            </header>
+
+            <div class="stage-grid" id="stageGrid">
+              <button class="stage-card" type="button" data-stage="moonTemple">
+                <span class="stage-thumb moon-temple" aria-hidden="true"></span><b>SHATTERED MOON</b><small>TEMPLE</small>
+              </button>
+              <button class="stage-card" type="button" data-stage="infernalForge">
+                <span class="stage-thumb infernal-forge" aria-hidden="true"></span><b>INFERNAL</b><small>FORGE</small>
+              </button>
+              <button class="stage-card" type="button" data-stage="moonGate">
+                <span class="stage-thumb moon-gate" aria-hidden="true"></span><b>MOON GATE</b><small>MONASTERY</small>
+              </button>
+              <button class="stage-card" type="button" data-stage="venomMarsh">
+                <span class="stage-thumb venom-marsh" aria-hidden="true"></span><b>VENOM</b><small>MARSH</small>
+              </button>
+              <button class="stage-card random-stage" type="button" data-stage="random">
+                <span class="stage-thumb random" aria-hidden="true">?</span><b>RANDOM</b><small>LET FATE DECIDE</small>
+              </button>
+            </div>
+
+            <div class="stage-matchup" aria-live="polite">
+              <b id="stagePlayerOne">P1</b><strong>VERSUS</strong><b id="stagePlayerTwo">P2</b>
+            </div>
+
+            <button class="text-button stage-back" id="stageBackButton" type="button">← BACK TO ROSTER</button>
           </section>
 
           <section class="game-overlay result-overlay" id="resultOverlay" hidden>
@@ -121,7 +157,7 @@
             <span id="winnerSubtitle">THE OATH HAS BEEN SEALED</span>
             <div class="result-actions">
               <button class="arcade-button primary compact" id="rematchButton" type="button">
-                <span><b>REMATCH</b><small>A new CPU rival in solo mode</small></span>
+                <span><b>REMATCH</b><small>Choose an arena and face P2 again</small></span>
               </button>
               <button class="arcade-button compact" id="menuButton" type="button">
                 <span><b>MAIN MENU</b><small>Choose another mode</small></span>

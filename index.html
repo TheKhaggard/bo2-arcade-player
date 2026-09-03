@@ -93,6 +93,12 @@
               <button class="fighter-card" type="button" data-character="ilyra" aria-label="Select Ilyra">
                 <span class="fighter-portrait ilyra" aria-hidden="true"></span><span class="fighter-name">ILYRA</span>
               </button>
+              <button class="fighter-card" type="button" data-character="dravok" aria-label="Select Dravok">
+                <span class="fighter-portrait dravok" aria-hidden="true"></span><span class="fighter-name">DRAVOK</span>
+              </button>
+              <button class="fighter-card" type="button" data-character="sythra" aria-label="Select Sythra">
+                <span class="fighter-portrait sythra" aria-hidden="true"></span><span class="fighter-name">SYTHRA</span>
+              </button>
             </div>
 
             <div class="selection-strip" aria-live="polite">
@@ -100,6 +106,8 @@
               <strong>VS</strong>
               <span><small id="playerTwoLabel">CPU</small><b id="playerTwoChoice">RANDOM</b></span>
             </div>
+
+            <p class="stage-draw">RANDOM ARENA <b id="stageChoice">SHATTERED MOON TEMPLE</b></p>
 
             <div class="select-actions">
               <button class="text-button" id="backButton" type="button">← MAIN MENU</button>
@@ -120,6 +128,10 @@
               </button>
             </div>
           </section>
+
+          <button class="match-pause-button" id="matchPauseButton" type="button" aria-pressed="false" hidden>
+            <span aria-hidden="true">Ⅱ</span> PAUSE
+          </button>
         </div>
       </section>
 
@@ -129,6 +141,7 @@
         </div>
         <div class="deck-actions">
           <button id="soundButton" type="button" aria-pressed="false"><i class="red-lamp"></i> SOUND: ON</button>
+          <button id="pauseButton" type="button" aria-pressed="false" disabled><i class="green-lamp"></i> PAUSE</button>
           <button id="fullscreenButton" type="button"><i class="amber-lamp"></i> FULLSCREEN</button>
           <button id="helpButton" type="button" aria-expanded="false"><i class="steel-lamp"></i> CONTROLS</button>
         </div>
@@ -152,7 +165,7 @@
           <header><span>PAD</span><b>GAMEPAD</b></header>
           <p>Move with the D-pad or left stick. Face buttons attack; the left shoulder button blocks.</p>
           <p>When <b>FINISH THEM</b> appears, press any attack to unleash your fighter's Oathbreaker.</p>
-          <p>Press <kbd>ESC</kbd> or <kbd>P</kbd> to pause.</p>
+          <p>Press <kbd>ESC</kbd>, <kbd>P</kbd>, or the cabinet <b>PAUSE</b> button to pause and resume.</p>
         </article>
       </section>
 

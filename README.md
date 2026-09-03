@@ -10,12 +10,14 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 
 ## Features
 
-- Eight original playable fighters with distinct speed, power, and movement profiles
-- Single-player battles against a randomly selected adaptive CPU rival
+- Ten original playable fighters with distinct speed, power, and movement profiles
+- Single-player battles against a randomly selected, defensive CPU rival with readable attack recovery
 - Local two-player versus on one keyboard
 - Two-gamepad support through the browser Gamepad API
+- Four randomly selected arenas: Shattered Moon Temple, Infernal Forge, Moon Gate Monastery, and Venom Marsh
 - Best-of-three rounds, timer, jumping, blocking, four attacks, hit reactions, and knockouts
 - Interactive **Oathbreaker** finishers at the end of the final round
+- Pause and resume from the fight screen, cabinet controls, keyboard, or gamepad
 - Original synthesized arcade sound effects through the Web Audio API
 - Fullscreen support and a responsive physical arcade-cabinet presentation
 - Pure HTML, CSS, and JavaScript with no runtime dependencies
@@ -32,6 +34,8 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 | Orun | The Storm Oracle | Heaven's Break |
 | Serika | The Blood-Moon Fang | Blood Moon |
 | Ilyra | The Fallen Sky Heir | Last Breath |
+| Dravok | The Dethroned Tyrant | Tyrant's Eclipse |
+| Sythra | The Venom Marsh Hunter | Venom Bloom |
 
 ## Controls
 
@@ -43,6 +47,7 @@ Blood Oath II is an original dark-fantasy 2D arcade fighter that runs instantly 
 | Block | `G` | `K` | Left shoulder |
 | High kick | `H` | `L` | Face button |
 | Low kick | `N` | `.` | Face button |
-| Pause | `P` / `Esc` | `P` / `Esc` | Start |
+| Pause / resume | `P` / `Esc` | `P` / `Esc` | Start |
 
 When **FINISH THEM!** appears, the winning player can press any attack button to perform that fighter's Oathbreaker.
+The illuminated **PAUSE / RESUME** controls both inside and beneath the fight screen provide the same control with a mouse or touchscreen.

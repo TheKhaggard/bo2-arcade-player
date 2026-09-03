@@ -41,14 +41,19 @@ class StaticSiteTests(unittest.TestCase):
             "src/audio.js",
             "src/game.js",
             "assets/arena-moon-temple.png",
+            "assets/arena-infernal-forge.png",
+            "assets/arena-moon-gate.png",
+            "assets/arena-venom-marsh.png",
             "assets/riven-sprites.png",
             "assets/veyra-sprites.png",
-            "assets/kael-sprites.png",
-            "assets/neris-sprites.png",
+            "assets/kael-sprites-v3.png",
+            "assets/neris-sprites-v3.png",
             "assets/vance-sprites.png",
             "assets/orun-sprites.png",
             "assets/serika-sprites.png",
             "assets/ilyra-sprites.png",
+            "assets/dravok-sprites.png",
+            "assets/sythra-sprites.png",
             "README.md",
             "LICENSE",
             "THIRD_PARTY_NOTICES.md",
@@ -61,14 +66,19 @@ class StaticSiteTests(unittest.TestCase):
         self.assertIn("app.js", self.parser.scripts)
         for asset in (
             "arena-moon-temple.png",
+            "arena-infernal-forge.png",
+            "arena-moon-gate.png",
+            "arena-venom-marsh.png",
             "riven-sprites.png",
             "veyra-sprites.png",
-            "kael-sprites.png",
-            "neris-sprites.png",
+            "kael-sprites-v3.png",
+            "neris-sprites-v3.png",
             "vance-sprites.png",
             "orun-sprites.png",
             "serika-sprites.png",
             "ilyra-sprites.png",
+            "dravok-sprites.png",
+            "sythra-sprites.png",
         ):
             self.assertIn(asset, self.html + (ROOT / "src/config.js").read_text(encoding="utf-8"))
 
@@ -81,6 +91,9 @@ class StaticSiteTests(unittest.TestCase):
             "resultOverlay",
             "fightButton",
             "soundButton",
+            "pauseButton",
+            "matchPauseButton",
+            "stageChoice",
             "fullscreenButton",
             "helpButton",
         }
@@ -95,13 +108,17 @@ class StaticSiteTests(unittest.TestCase):
     def test_full_roster_random_cpu_and_finisher_are_present(self):
         config = (ROOT / "src/config.js").read_text(encoding="utf-8")
         game = (ROOT / "src/game.js").read_text(encoding="utf-8")
-        for fighter in ("riven", "veyra", "kael", "neris", "vance", "orun", "serika", "ilyra"):
+        for fighter in ("riven", "veyra", "kael", "neris", "vance", "orun", "serika", "ilyra", "dravok", "sythra"):
             self.assertIn(f'id: "{fighter}"', config)
             self.assertIn(f'data-character="{fighter}"', self.html)
         self.assertIn("randomOpponent", self.javascript)
         self.assertIn('phase = "finishPrompt"', game)
         self.assertIn("performFinisher", game)
         self.assertIn("FINISH THEM!", game)
+        self.assertIn("togglePause", game)
+        self.assertIn("attackCooldown", game)
+        self.assertIn("retreatTimer", game)
+        self.assertIn("STAGES", game)
 
     def test_player_facing_copy_is_english(self):
         self.assertIn('<html lang="en">', self.html)

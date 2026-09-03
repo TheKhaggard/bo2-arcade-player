@@ -1,5 +1,5 @@
 import { AudioEngine } from "./src/audio.js";
-import { CHARACTERS } from "./src/config.js";
+import { CHARACTERS, STAGES } from "./src/config.js";
 import { ArenaGame } from "./src/game.js";
 import { InputManager } from "./src/input.js";
 
@@ -15,6 +15,7 @@ const elements = {
   playerOneChoice: document.querySelector("#playerOneChoice"),
   playerTwoChoice: document.querySelector("#playerTwoChoice"),
   playerTwoLabel: document.querySelector("#playerTwoLabel"),
+  stageChoice: document.querySelector("#stageChoice"),
   fighterCards: [...document.querySelectorAll("[data-character]")],
   modeButtons: [...document.querySelectorAll("[data-mode]")],
   fightButton: document.querySelector("#fightButton"),
@@ -24,6 +25,8 @@ const elements = {
   winnerName: document.querySelector("#winnerName"),
   winnerSubtitle: document.querySelector("#winnerSubtitle"),
   soundButton: document.querySelector("#soundButton"),
+  pauseButton: document.querySelector("#pauseButton"),
+  matchPauseButton: document.querySelector("#matchPauseButton"),
   fullscreenButton: document.querySelector("#fullscreenButton"),
   helpButton: document.querySelector("#helpButton"),
   instructionPanel: document.querySelector("#instructionPanel"),
@@ -36,10 +39,16 @@ const audio = new AudioEngine();
 let selectedMode = "solo";
 let selections = { playerOne: null, playerTwo: null };
 const characterIds = Object.keys(CHARACTERS);
+const stageIds = Object.keys(STAGES);
+let selectedStage = stageIds[0];
 
 function randomOpponent(excludedCharacter) {
   const candidates = characterIds.filter((character) => character !== excludedCharacter);
   return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function randomStage() {
+  return stageIds[Math.floor(Math.random() * stageIds.length)];
 }
 
 function showOverlay(target) {
@@ -57,6 +66,7 @@ function updateRoster() {
   elements.playerOneChoice.textContent = selections.playerOne ? CHARACTERS[selections.playerOne].name : "—";
   elements.playerTwoChoice.textContent = selections.playerTwo ? CHARACTERS[selections.playerTwo].name : (selectedMode === "solo" ? "RANDOM" : "—");
   elements.playerTwoLabel.textContent = selectedMode === "solo" ? "CPU" : "P2";
+  elements.stageChoice.textContent = STAGES[selectedStage].name;
 
   if (!selections.playerOne) {
     elements.selectionEyebrow.textContent = "PLAYER ONE";
@@ -77,6 +87,7 @@ function updateRoster() {
 function openCharacterSelect(mode) {
   selectedMode = mode;
   selections = { playerOne: null, playerTwo: null };
+  selectedStage = randomStage();
   elements.selectOverlay.classList.toggle("solo-selection", mode === "solo");
   updateRoster();
   showOverlay(elements.selectOverlay);
@@ -107,6 +118,7 @@ function startFight() {
     mode: selectedMode,
     playerOne: selections.playerOne,
     playerTwo: selections.playerTwo,
+    stage: selectedStage,
   });
 }
 
@@ -116,6 +128,14 @@ function returnToMenu() {
 }
 
 const game = new ArenaGame(elements.canvas, input, audio, {
+  onPauseChange: (paused, available) => {
+    elements.pauseButton.disabled = !available;
+    elements.pauseButton.setAttribute("aria-pressed", String(paused));
+    elements.pauseButton.innerHTML = `<i class="green-lamp"></i> ${paused ? "RESUME" : "PAUSE"}`;
+    elements.matchPauseButton.hidden = !available;
+    elements.matchPauseButton.setAttribute("aria-pressed", String(paused));
+    elements.matchPauseButton.innerHTML = `<span aria-hidden="true">${paused ? "▶" : "Ⅱ"}</span> ${paused ? "RESUME" : "PAUSE"}`;
+  },
   onMatchEnd: ({ winner, score, finisher }) => {
     elements.winnerName.textContent = `${winner.name} WINS`;
     elements.winnerSubtitle.textContent = finisher
@@ -138,12 +158,14 @@ elements.menuButton.addEventListener("click", returnToMenu);
 elements.rematchButton.addEventListener("click", () => {
   void audio.unlock();
   showOverlay(null);
-  if (selectedMode === "solo") {
-    selections.playerTwo = randomOpponent(selections.playerOne);
-    game.startMatch({ mode: selectedMode, playerOne: selections.playerOne, playerTwo: selections.playerTwo });
-  } else {
-    game.rematch();
-  }
+  if (selectedMode === "solo") selections.playerTwo = randomOpponent(selections.playerOne);
+  selectedStage = randomStage();
+  game.startMatch({
+    mode: selectedMode,
+    playerOne: selections.playerOne,
+    playerTwo: selections.playerTwo,
+    stage: selectedStage,
+  });
 });
 
 elements.soundButton.addEventListener("click", () => {
@@ -152,6 +174,9 @@ elements.soundButton.addEventListener("click", () => {
   elements.soundButton.setAttribute("aria-pressed", String(!enabled));
   elements.soundButton.innerHTML = `<i class="red-lamp"></i> SOUND: ${enabled ? "ON" : "OFF"}`;
 });
+
+elements.pauseButton.addEventListener("click", () => game.togglePause());
+elements.matchPauseButton.addEventListener("click", () => game.togglePause());
 
 elements.fullscreenButton.addEventListener("click", async () => {
   try {

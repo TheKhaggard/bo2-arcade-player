@@ -1,4 +1,4 @@
-import { ATTACKS, CHARACTERS, ROUND, VIEWPORT } from "./config.js";
+import { ATTACKS, CHARACTERS, ROUND, STAGES, VIEWPORT } from "./config.js";
 
 const GRAVITY = 1480;
 const ARENA_LEFT = 82;
@@ -146,17 +146,28 @@ class AIController {
     this.decisionTimer = 0;
     this.guardTimer = 0;
     this.reactionTimer = 0;
+    this.attackCooldown = 0.55 + Math.random() * 0.25;
+    this.retreatTimer = 0;
     this.move = 0;
-    this.comboQueue = [];
+    this.wasAttacking = false;
   }
 
   command(dt, self, opponent, roundNumber = 1) {
     this.decisionTimer -= dt;
     this.guardTimer = Math.max(0, this.guardTimer - dt);
     this.reactionTimer = Math.max(0, this.reactionTimer - dt);
+    this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+    this.retreatTimer = Math.max(0, this.retreatTimer - dt);
     const distance = Math.abs(opponent.x - self.x);
     const towardOpponent = Math.sign(opponent.x - self.x);
-    const difficulty = clamp(0.68 + roundNumber * 0.07, 0.72, 0.91);
+    const difficulty = clamp(0.48 + roundNumber * 0.07, 0.55, 0.72);
+
+    if (this.wasAttacking && !self.attack) {
+      this.attackCooldown = Math.max(this.attackCooldown, 0.52 + Math.random() * 0.42);
+      this.retreatTimer = 0.16 + Math.random() * 0.28;
+      this.move = -towardOpponent;
+    }
+    this.wasAttacking = Boolean(self.attack);
 
     if (self.locked) return emptyCommand();
 
@@ -167,47 +178,82 @@ class AIController {
       this.guardTimer = 0.2 + Math.random() * 0.24;
       this.reactionTimer = 0.11 + Math.random() * 0.08;
       this.move = 0;
-      this.comboQueue.length = 0;
+    }
+
+    if (this.guardTimer > 0) {
+      return { ...emptyCommand(), block: true };
+    }
+
+    if (this.retreatTimer > 0) {
+      return {
+        ...emptyCommand(),
+        left: towardOpponent > 0,
+        right: towardOpponent < 0,
+      };
     }
 
     let attack = null;
     let jump = false;
     if (this.decisionTimer <= 0) {
-      this.decisionTimer = Math.max(0.065, 0.16 - roundNumber * 0.012) + Math.random() * 0.1;
+      this.decisionTimer = Math.max(0.18, 0.28 - roundNumber * 0.015) + Math.random() * 0.16;
       const lowHealth = self.health < 28;
       const hasHealthLead = self.health > opponent.health + 24;
+      const canAttack = this.attackCooldown <= 0;
+      const roll = Math.random();
 
-      if (this.comboQueue.length && distance < 150 && !opponent.ko) {
-        attack = this.comboQueue.shift();
-        this.move = 0;
-      } else if (opponent.airborne && distance < 145) {
+      if (opponent.airborne && distance < 145 && canAttack && roll < 0.42) {
         this.move = 0;
         attack = Math.random() < 0.62 ? "highPunch" : "highKick";
-      } else if (distance > 205) {
-        this.move = towardOpponent;
-        jump = Math.random() < 0.12 + roundNumber * 0.015;
-      } else if (distance > 122) {
-        this.move = towardOpponent;
-        if (Math.random() < 0.22 + roundNumber * 0.025) attack = "highKick";
-      } else if (distance < 66) {
-        if ((lowHealth || hasHealthLead) && Math.random() < 0.52) {
-          this.move = -towardOpponent;
-          this.guardTimer = 0.12 + Math.random() * 0.2;
+      } else if (distance > 230) {
+        if (roll < 0.7) {
+          this.move = towardOpponent;
+          jump = Math.random() < 0.08;
         } else {
           this.move = 0;
-          attack = Math.random() < 0.58 ? "lowPunch" : "lowKick";
-          if (Math.random() < 0.34 + roundNumber * 0.03) this.comboQueue.push("highPunch", "highKick");
+          this.guardTimer = 0.18 + Math.random() * 0.24;
+        }
+      } else if (distance > 150) {
+        if (roll < 0.45) this.move = towardOpponent;
+        else if (roll < 0.65) {
+          this.move = 0;
+          this.guardTimer = 0.2 + Math.random() * 0.26;
+        } else if (roll < 0.78 && canAttack) {
+          this.move = 0;
+          attack = "highKick";
+        } else {
+          this.move = -towardOpponent;
+          this.retreatTimer = 0.14 + Math.random() * 0.2;
+        }
+      } else if (distance > 95) {
+        if (roll < 0.28 || ((lowHealth || hasHealthLead) && roll < 0.42)) {
+          this.move = -towardOpponent;
+          this.retreatTimer = 0.2 + Math.random() * 0.28;
+        } else if (roll < 0.5) {
+          this.move = 0;
+          this.guardTimer = 0.24 + Math.random() * 0.3;
+        } else if (roll < 0.72 && canAttack) {
+          this.move = 0;
+          attack = opponent.blocking ? "lowKick" : (Math.random() < 0.5 ? "highPunch" : "highKick");
+        } else {
+          this.move = Math.random() < 0.5 ? 0 : towardOpponent;
         }
       } else {
-        this.move = 0;
-        const roll = Math.random();
-        if (opponent.blocking && roll < 0.46) attack = "lowKick";
-        else if (opponent.crouching && roll < 0.64) attack = "highKick";
-        else if (roll < 0.25) attack = "lowPunch";
-        else if (roll < 0.48) attack = "highPunch";
-        else if (roll < 0.7) attack = "lowKick";
-        else if (roll < 0.9) attack = "highKick";
-        else this.guardTimer = 0.25 + Math.random() * 0.2;
+        if (roll < 0.35 || ((lowHealth || hasHealthLead) && roll < 0.5)) {
+          this.move = -towardOpponent;
+          this.retreatTimer = 0.22 + Math.random() * 0.34;
+        } else if (roll < 0.6) {
+          this.move = 0;
+          this.guardTimer = 0.25 + Math.random() * 0.34;
+        } else if (roll < 0.83 && canAttack) {
+          this.move = 0;
+          attack = opponent.blocking ? "lowKick" : (Math.random() < 0.54 ? "lowPunch" : "lowKick");
+        } else {
+          this.move = 0;
+        }
+      }
+
+      if (attack) {
+        this.attackCooldown = Math.max(0.48, 0.78 - roundNumber * 0.035) + Math.random() * 0.34;
       }
     }
 
@@ -223,13 +269,15 @@ class AIController {
 }
 
 export class ArenaGame {
-  constructor(canvas, input, audio, { onMatchEnd } = {}) {
+  constructor(canvas, input, audio, { onMatchEnd, onPauseChange } = {}) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d", { alpha: false });
     this.input = input;
     this.audio = audio;
     this.onMatchEnd = onMatchEnd ?? (() => {});
+    this.onPauseChange = onPauseChange ?? (() => {});
     this.images = {};
+    this.stage = STAGES.moonTemple;
     this.fighters = [];
     this.ai = new AIController();
     this.state = "loading";
@@ -257,7 +305,7 @@ export class ArenaGame {
 
   async load(onProgress = () => {}) {
     const sources = [
-      ["arena", "assets/arena-moon-temple.png"],
+      ...Object.values(STAGES).map((stage) => [stage.id, stage.image]),
       ...Object.values(CHARACTERS).map((character) => [character.id, character.sprite]),
     ];
     let loaded = 0;
@@ -273,6 +321,9 @@ export class ArenaGame {
     this.state = "attract";
     this.phase = "idle";
     this.paused = false;
+    this.onPauseChange(false, false);
+    const stageRoster = Object.values(STAGES);
+    this.stage = stageRoster[Math.floor(Math.random() * stageRoster.length)];
     const attractRoster = Object.keys(CHARACTERS).sort(() => Math.random() - 0.5).slice(0, 2);
     this.fighters = [
       new Fighter(CHARACTERS[attractRoster[0]], 0, this.images[attractRoster[0]], 285),
@@ -280,12 +331,15 @@ export class ArenaGame {
     ];
   }
 
-  startMatch({ mode, playerOne, playerTwo }) {
+  startMatch({ mode, playerOne, playerTwo, stage }) {
     this.mode = mode;
     this.state = "fight";
     this.paused = false;
+    this.onPauseChange(false, true);
     this.roundNumber = 1;
     this.finisherUsed = false;
+    const stageRoster = Object.values(STAGES);
+    this.stage = STAGES[stage] ?? stageRoster[Math.floor(Math.random() * stageRoster.length)];
     this.fighters = [
       new Fighter(CHARACTERS[playerOne], 0, this.images[playerOne], 280),
       new Fighter(CHARACTERS[playerTwo], 1, this.images[playerTwo], 680),
@@ -315,7 +369,15 @@ export class ArenaGame {
       mode: this.mode,
       playerOne: this.fighters[0].character.id,
       playerTwo: this.fighters[1].character.id,
+      stage: Object.keys(STAGES)[Math.floor(Math.random() * Object.keys(STAGES).length)],
     });
+  }
+
+  togglePause() {
+    if (this.state !== "fight") return false;
+    this.paused = !this.paused;
+    this.onPauseChange(this.paused, true);
+    return this.paused;
   }
 
   commandFor(player, dt) {
@@ -339,7 +401,7 @@ export class ArenaGame {
     this.accumulator += elapsed;
     this.input.update();
 
-    if (this.state === "fight" && this.input.pausePressed()) this.paused = !this.paused;
+    if (this.state === "fight" && this.input.pausePressed()) this.togglePause();
 
     while (this.accumulator >= 1 / 60) {
       this.update(1 / 60);
@@ -510,6 +572,8 @@ export class ArenaGame {
   completeMatch(finisher) {
     this.phase = "complete";
     this.state = "complete";
+    this.paused = false;
+    this.onPauseChange(false, false);
     this.onMatchEnd({
       winner: this.roundWinner.character,
       score: `${this.fighters[0].wins}—${this.fighters[1].wins}`,
@@ -569,6 +633,9 @@ export class ArenaGame {
     const context = this.context;
     this.canvas.dataset.gameState = this.state;
     this.canvas.dataset.gamePhase = this.phase;
+    this.canvas.dataset.roundTime = this.roundTimer.toFixed(2);
+    this.canvas.dataset.stage = this.stage?.id ?? "moonTemple";
+    this.canvas.dataset.stageName = this.stage?.name ?? STAGES.moonTemple.name;
     context.save();
     if (this.shake > 0) context.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
     this.drawArena(time);
@@ -585,7 +652,7 @@ export class ArenaGame {
 
   drawArena(time) {
     const context = this.context;
-    const arena = this.images.arena;
+    const arena = this.images[this.stage?.id ?? "moonTemple"];
     if (arena) context.drawImage(arena, 0, 0, arena.width, arena.height - 8, 0, 0, VIEWPORT.width, VIEWPORT.height);
     else {
       context.fillStyle = "#080504";
@@ -594,14 +661,14 @@ export class ArenaGame {
 
     const fog = context.createLinearGradient(0, 310, 0, VIEWPORT.height);
     fog.addColorStop(0, "rgba(125, 141, 147, 0)");
-    fog.addColorStop(0.7, `rgba(91, 98, 100, ${0.055 + Math.sin(time * 0.6) * 0.015})`);
+    fog.addColorStop(0.7, `rgba(${this.stage?.fog ?? "91, 98, 100"}, ${0.055 + Math.sin(time * 0.6) * 0.015})`);
     fog.addColorStop(1, "rgba(0, 0, 0, 0.18)");
     context.fillStyle = fog;
     context.fillRect(0, 290, VIEWPORT.width, 250);
 
     for (const mote of this.ash) {
       context.globalAlpha = 0.18 + (mote.size / 3) * 0.18;
-      context.fillStyle = mote.size > 2 ? "#f69b3a" : "#b5a78e";
+      context.fillStyle = mote.size > 2 ? this.stage?.moteBright ?? "#f69b3a" : this.stage?.moteDim ?? "#b5a78e";
       context.fillRect(mote.x, mote.y, mote.size, mote.size);
     }
     context.globalAlpha = 1;
@@ -750,7 +817,7 @@ export class ArenaGame {
     }
     if (this.phase === "intro") {
       const label = this.phaseTimer > 0.92 ? `ROUND ${this.roundNumber}` : "FIGHT!";
-      this.drawCenterText(label, this.phaseTimer > 0.92 ? "THE OATH CONTINUES" : "", this.phaseTimer > 0.92 ? "#e0bd74" : "#e23b22");
+      this.drawCenterText(label, this.phaseTimer > 0.92 ? this.stage.name : "", this.phaseTimer > 0.92 ? "#e0bd74" : "#e23b22");
     } else if (this.phase === "outro") {
       const loser = this.roundWinner === this.fighters[0] ? this.fighters[1] : this.fighters[0];
       const message = loser?.ko ? "KNOCK OUT" : `${this.roundWinner?.character.name} WINS`;

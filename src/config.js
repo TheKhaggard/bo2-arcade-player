@@ -7,6 +7,41 @@ export const ROUND = Object.freeze({
   outroSeconds: 2.6,
 });
 
+export const STAGES = Object.freeze({
+  moonTemple: Object.freeze({
+    id: "moonTemple",
+    name: "SHATTERED MOON TEMPLE",
+    image: "assets/arena-moon-temple.png",
+    fog: "91, 98, 100",
+    moteBright: "#f69b3a",
+    moteDim: "#b5a78e",
+  }),
+  infernalForge: Object.freeze({
+    id: "infernalForge",
+    name: "THE INFERNAL FORGE",
+    image: "assets/arena-infernal-forge.png",
+    fog: "127, 40, 18",
+    moteBright: "#ff9a32",
+    moteDim: "#c4451f",
+  }),
+  moonGate: Object.freeze({
+    id: "moonGate",
+    name: "MOON GATE MONASTERY",
+    image: "assets/arena-moon-gate.png",
+    fog: "111, 132, 153",
+    moteBright: "#eacb76",
+    moteDim: "#a7b7c6",
+  }),
+  venomMarsh: Object.freeze({
+    id: "venomMarsh",
+    name: "THE VENOM MARSH",
+    image: "assets/arena-venom-marsh.png",
+    fog: "70, 112, 67",
+    moteBright: "#9fdb65",
+    moteDim: "#809b62",
+  }),
+});
+
 export const CHARACTERS = Object.freeze({
   riven: Object.freeze({
     id: "riven",
@@ -36,7 +71,7 @@ export const CHARACTERS = Object.freeze({
     id: "kael",
     name: "KAEL",
     epithet: "THE ASH-BOUND HUNTER",
-    sprite: "assets/kael-sprites.png",
+    sprite: "assets/kael-sprites-v3.png",
     speed: 248,
     jump: 625,
     power: 1.05,
@@ -48,7 +83,7 @@ export const CHARACTERS = Object.freeze({
     id: "neris",
     name: "NERIS",
     epithet: "THE FROSTBOUND NOMAD",
-    sprite: "assets/neris-sprites.png",
+    sprite: "assets/neris-sprites-v3.png",
     speed: 254,
     jump: 640,
     power: 0.99,
@@ -103,6 +138,30 @@ export const CHARACTERS = Object.freeze({
     scale: 0.98,
     accent: "#8198f2",
     finisher: "LAST BREATH",
+  }),
+  dravok: Object.freeze({
+    id: "dravok",
+    name: "DRAVOK",
+    epithet: "THE DETHRONED TYRANT",
+    sprite: "assets/dravok-sprites.png",
+    speed: 205,
+    jump: 570,
+    power: 1.18,
+    scale: 1.05,
+    accent: "#b92b1e",
+    finisher: "TYRANT'S ECLIPSE",
+  }),
+  sythra: Object.freeze({
+    id: "sythra",
+    name: "SYTHRA",
+    epithet: "THE VENOM MARSH HUNTER",
+    sprite: "assets/sythra-sprites.png",
+    speed: 286,
+    jump: 680,
+    power: 0.92,
+    scale: 0.99,
+    accent: "#7dbb3d",
+    finisher: "VENOM BLOOM",
   }),
 });
 

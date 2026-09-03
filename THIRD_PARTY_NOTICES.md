@@ -9,14 +9,19 @@ This game uses no third-party JavaScript library, emulator core, CDN dependency,
 The following original visual assets were generated from scratch with AI-assisted tools specifically for this project:
 
 - `assets/arena-moon-temple.png`
+- `assets/arena-infernal-forge.png`
+- `assets/arena-moon-gate.png`
+- `assets/arena-venom-marsh.png`
 - `assets/riven-sprites.png`
 - `assets/veyra-sprites.png`
-- `assets/kael-sprites.png`
-- `assets/neris-sprites.png`
+- `assets/kael-sprites-v3.png`
+- `assets/neris-sprites-v3.png`
 - `assets/vance-sprites.png`
 - `assets/orun-sprites.png`
 - `assets/serika-sprites.png`
 - `assets/ilyra-sprites.png`
+- `assets/dravok-sprites.png`
+- `assets/sythra-sprites.png`
 
 No sprite, screenshot, logo, portrait, stage, or commercial asset from another game was used as source material.
 
